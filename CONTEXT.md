@@ -43,3 +43,20 @@ AI-powered savings app on Arc (Circle's stablecoin L1). Users lock USDC for chos
 
 ## Build log
 - 2026-06-26: Repo cloned, dependencies installed, dev server confirmed running
+
+## Current state
+- ✅ Landing page (polished, ships)
+- ✅ AppShell + sidebar nav (working, but Savings/History/Settings still link to dashboard)
+- ✅ Dashboard with stats + Active Locks section (NEW — shipped today)
+- ✅ Chat UI (mock botReply only, not a real agent)
+- ✅ NewLockModal (functional with mock store)
+- ✅ oink-store (mock state layer)
+- 🔴 Smart contract: not started (TOMORROW)
+- 🔴 Wallet integration: not started
+- 🔴 Real AI agent: not started
+- 🔴 /savings route, /history route, /settings route: placeholders only
+- 🔴 Wallet display at top-right when connected: deferred
+- 🔴 Email/Google login + profile pic: deferred
+
+## Build log
+- 2026-06-26 Day 1: Repo cloned, dev server up, Claude Code installed, CONTEXT.md created, codebase audited, Active Locks section shipped to dashboard.

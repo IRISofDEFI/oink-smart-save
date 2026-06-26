@@ -51,3 +51,17 @@
 - DeFi research / yield analytics
 - Mobile app
 - Notifications
+
+
+## UI Polish — Deferred to after smart contract
+
+Tonight's good idea, but deliberately deferred to keep focus on smart contract first:
+
+- [ ] Make sidebar links (Savings, History, Settings) actually navigate to their routes
+- [ ] Build out /savings page (dedicated locks view)
+- [ ] Build out /history page (transaction history)
+- [ ] Build out /settings page
+- [ ] Add wallet indicator to top-right when connected
+- [ ] Add user avatar at top-right (placeholder until email/Google login)
+- [ ] Move connected wallet indicator from bottom-left to top-right
+- [ ] Email/Google login flow (much later, requires auth setup)
