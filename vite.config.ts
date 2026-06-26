@@ -1,9 +1,6 @@
-// @lovable.dev/vite-tanstack-config already includes the following — do NOT add them manually
-// or the app will break with duplicate plugins:
-//   - tanstackStart, viteReact, tailwindcss, tsConfigPaths, nitro (build-only using cloudflare as a default target),
-//     componentTagger (dev-only), VITE_* env injection, @ path alias, React/TanStack dedupe,
-//     error logger plugins, and sandbox detection (port/host/strictPort).
-// You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
+// NOTE: @lovable.dev/vite-tanstack-config is a build-tool dependency (not UI branding).
+// It bundles TanStack Start, Vite React, Tailwind CSS, tsconfig-paths, and Nitro SSR.
+// Do NOT add those plugins manually — they're already included and duplicating them breaks the build.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 export default defineConfig({
