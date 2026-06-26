@@ -13,13 +13,28 @@ import { Label } from "@/components/ui/label";
 import { useOink, formatDate } from "@/lib/oink-store";
 import { cn } from "@/lib/utils";
 
-const DURATION_PRESETS = [7, 30, 90, 180];
+const DURATION_PRESETS = [7, 14, 30, 60, 90];
 
-export function NewLockModal({ trigger }: { trigger?: React.ReactNode }) {
+export function NewLockModal({
+  trigger,
+  open: controlledOpen,
+  onOpenChange,
+}: {
+  trigger?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}) {
   const { addLock } = useOink();
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
   const [amount, setAmount] = useState("");
   const [duration, setDuration] = useState(30);
+
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
+  const setOpen = (o: boolean) => {
+    if (!isControlled) setInternalOpen(o);
+    onOpenChange?.(o);
+  };
 
   const numericAmount = parseFloat(amount) || 0;
   const valid = numericAmount > 0 && duration > 0;
@@ -49,21 +64,24 @@ export function NewLockModal({ trigger }: { trigger?: React.ReactNode }) {
         if (!o) reset();
       }}
     >
-      <DialogTrigger asChild>
-        {trigger ?? (
-          <Button size="lg" className="rounded-full font-semibold shadow-soft">
+      {trigger !== undefined ? (
+        <DialogTrigger asChild>{trigger}</DialogTrigger>
+      ) : !isControlled ? (
+        <DialogTrigger asChild>
+          <Button size="lg" className="rounded-full bg-gradient-brand font-semibold text-white">
             <Plus className="h-5 w-5" />
             New Lock
           </Button>
-        )}
-      </DialogTrigger>
-      <DialogContent className="rounded-3xl border-border/70 sm:max-w-md">
+        </DialogTrigger>
+      ) : null}
+
+      <DialogContent className="rounded-3xl border-border bg-card/95 backdrop-blur-xl glow-purple sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-xl">
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <LockIcon className="h-4 w-4" />
+          <DialogTitle className="flex items-center gap-3 text-xl">
+            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-brand text-white">
+              <LockIcon className="h-5 w-5" />
             </span>
-            Lock some savings
+            Create a new lock
           </DialogTitle>
         </DialogHeader>
 
@@ -77,7 +95,7 @@ export function NewLockModal({ trigger }: { trigger?: React.ReactNode }) {
                 placeholder="0.00"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="h-14 rounded-2xl pr-16 text-2xl font-semibold"
+                className="h-16 rounded-2xl border-border bg-secondary/40 pr-16 text-3xl font-bold"
               />
               <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground">
                 USDC
@@ -87,17 +105,17 @@ export function NewLockModal({ trigger }: { trigger?: React.ReactNode }) {
 
           <div className="space-y-2">
             <Label>Lock for</Label>
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-5 gap-2">
               {DURATION_PRESETS.map((d) => (
                 <button
                   key={d}
                   type="button"
                   onClick={() => setDuration(d)}
                   className={cn(
-                    "rounded-2xl border px-2 py-3 text-sm font-semibold transition-colors",
+                    "rounded-2xl border px-1 py-3 text-sm font-semibold transition-all",
                     duration === d
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "border-border bg-card text-foreground hover:bg-muted",
+                      ? "border-transparent bg-gradient-brand text-white glow-blue"
+                      : "border-border bg-secondary/40 text-muted-foreground hover:text-foreground",
                   )}
                 >
                   {d}d
@@ -106,26 +124,25 @@ export function NewLockModal({ trigger }: { trigger?: React.ReactNode }) {
             </div>
           </div>
 
-          <div className="flex items-start gap-3 rounded-2xl bg-cream p-4">
-            <CalendarClock className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+          <div className="flex items-start gap-3 rounded-2xl border border-border bg-secondary/30 p-4">
+            <CalendarClock className="mt-0.5 h-5 w-5 shrink-0 text-cyan" />
             <p className="text-sm leading-relaxed text-foreground">
               You're locking{" "}
-              <span className="font-bold">
+              <span className="font-bold text-gradient">
                 {numericAmount > 0 ? numericAmount : "—"} USDC
               </span>{" "}
-              until{" "}
-              <span className="font-bold">{formatDate(unlockDate)}</span>. You
-              won't be able to touch it until then.
+              until <span className="font-bold">{formatDate(unlockDate)}</span>.
+              You won't be able to withdraw before then.
             </p>
           </div>
 
           <Button
             size="lg"
-            className="h-12 w-full rounded-2xl text-base font-semibold shadow-soft"
+            className="h-12 w-full rounded-2xl bg-gradient-brand text-base font-semibold text-white transition-shadow hover:glow-purple"
             disabled={!valid}
             onClick={handleConfirm}
           >
-            Confirm lock
+            Confirm Lock
           </Button>
         </div>
       </DialogContent>
