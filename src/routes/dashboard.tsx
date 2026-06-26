@@ -23,7 +23,7 @@ function Dashboard() {
   }, [connected, connect]);
 
   return (
-    <AppShell action={<NewLockModal trigger={<ConnectChip />} />}>
+    <AppShell action={<ConnectChip />}>
       <div className="space-y-6">
         <div>
           <p className="text-sm font-medium text-muted-foreground">
