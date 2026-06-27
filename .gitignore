@@ -16,6 +16,12 @@ dist-ssr
 .nitro
 *.local
 
+# Smart contract toolchain
+.env
+artifacts/
+cache/
+typechain-types/
+
 # Wrangler / Cloudflare
 .wrangler/
 .dev.vars
