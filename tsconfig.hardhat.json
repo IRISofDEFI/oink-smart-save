@@ -9,5 +9,5 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["./hardhat.config.cts", "./test/**/*.ts", "./scripts/**/*.ts"]
+  "include": ["./hardhat.config.cts", "./test/**/*.ts", "./test/**/*.cts", "./scripts/**/*.ts"]
 }
