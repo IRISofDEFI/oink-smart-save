@@ -1,6 +1,27 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+/*
+ * ─────────────────────────────────────────────────────────────────────────
+ *  TRUST GUARANTEE
+ * ─────────────────────────────────────────────────────────────────────────
+ *
+ *  OinkSafe is non-custodial by design.
+ *
+ *  The contract owner has NO ability to access, withdraw, freeze, or move
+ *  any user's locked USDC. Only the original lock creator can withdraw
+ *  their own funds, enforced at the contract level by the require check
+ *  in the withdraw() function:
+ *
+ *      require(locks[lockId].owner == msg.sender, "OinkSafe: not lock owner");
+ *
+ *  The Ownable role is included only as a placeholder for future
+ *  non-financial admin actions (e.g. metadata, registry updates).
+ *  It cannot — and never will — touch user funds.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ */
+
 /// @title OinkSafe — Time-locked USDC savings on Arc
 /// @author OinkAI (Iris)
 /// @notice Lock USDC for a chosen duration. Withdraw any time, but the UI discourages early withdrawal.
@@ -10,6 +31,9 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+/// @dev Ownable is included for future non-financial admin functions only.
+///      It does NOT grant the owner any access to user funds. The withdraw()
+///      function enforces that only the original lock owner can withdraw.
 
 contract OinkSafe is ReentrancyGuard, Ownable {
     using SafeERC20 for IERC20;
