@@ -41,8 +41,10 @@ AI-powered savings app on Arc (Circle's stablecoin L1). Users lock USDC for chos
 - Wallet integration: not started
 - AI agent: not started
 
+
 ## Build log
-- 2026-06-26: Repo cloned, dependencies installed, dev server confirmed running
+- 2026-06-26 Day 1: Repo cloned, dev server up, Claude Code installed, CONTEXT.md created, codebase audited, Active Locks section shipped to dashboard.
+- 2026-06-26 Day 2: Cleaned Lovable branding, normalized line endings, drafted OinkSafe smart contract, installed OpenZeppelin, added trust guarantee comments. Set up Hardhat testing environment. Wrote 33-test suite, all passing.
 
 ## Current state
 - ✅ Landing page (polished, ships)
