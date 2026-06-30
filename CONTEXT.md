@@ -34,31 +34,20 @@ AI-powered savings app on Arc (Circle's stablecoin L1). Users lock USDC for chos
 - Block explorer: testnet.arcscan.app
 - Faucet: faucet.circle.com
 
-## Current state
-- UI scaffolded by Lovable (incomplete — credits ran out mid-build)
-- Local dev server running on localhost:8080
-- Smart contract: not started
-- Wallet integration: not started
-- AI agent: not started
-
-
-## Build log
-- 2026-06-26 Day 1: Repo cloned, dev server up, Claude Code installed, CONTEXT.md created, codebase audited, Active Locks section shipped to dashboard.
-- 2026-06-26 Day 2: Cleaned Lovable branding, normalized line endings, drafted OinkSafe smart contract, installed OpenZeppelin, added trust guarantee comments. Set up Hardhat testing environment. Wrote 33-test suite, all passing.
 
 ## Current state
 - ✅ Landing page (polished, ships)
-- ✅ AppShell + sidebar nav (working, but Savings/History/Settings still link to dashboard)
-- ✅ Dashboard with stats + Active Locks section (NEW — shipped today)
-- ✅ Chat UI (mock botReply only, not a real agent)
-- ✅ NewLockModal (functional with mock store)
-- ✅ oink-store (mock state layer)
-- 🔴 Smart contract: not started (TOMORROW)
-- 🔴 Wallet integration: not started
+- ✅ AppShell + sidebar nav
+- ✅ Dashboard with Active Locks section
+- ✅ Chat UI (mock botReply only, real agent next)
+- ✅ OinkSafe smart contract written, tested (33 passing), and DEPLOYED to Arc Testnet
+- ✅ Deployment address: 0x8CA4e4037d853Fa63Ee96A100631d21F4daC29E6
+- 🔴 Frontend wallet integration: not started
 - 🔴 Real AI agent: not started
-- 🔴 /savings route, /history route, /settings route: placeholders only
-- 🔴 Wallet display at top-right when connected: deferred
-- 🔴 Email/Google login + profile pic: deferred
+- 🔴 Frontend → contract wiring: not started
+- 🔴 Contract verification on arcscan.app: pending
 
 ## Build log
-- 2026-06-26 Day 1: Repo cloned, dev server up, Claude Code installed, CONTEXT.md created, codebase audited, Active Locks section shipped to dashboard.
+- 2026-06-26 Day 1: Repo cloned, dev server up, Active Locks section shipped to dashboard.
+- 2026-06-26 Day 2: Cleaned Lovable branding, drafted OinkSafe contract, OpenZeppelin installed, trust guarantees added. Set up Hardhat. Wrote 33-test suite — all passing.
+- 2026-06-27 Day 3: OinkSafe DEPLOYED to Arc Testnet at 0x8CA4e4037d853Fa63Ee96A100631d21F4daC29E6.
