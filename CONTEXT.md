@@ -42,6 +42,7 @@ AI-powered savings app on Arc (Circle's stablecoin L1). Users lock USDC for chos
 - ✅ Chat UI (mock botReply only, real agent next)
 - ✅ OinkSafe smart contract written, tested (33 passing), and DEPLOYED to Arc Testnet
 - ✅ Deployment address: 0x8CA4e4037d853Fa63Ee96A100631d21F4daC29E6
+- ✅ OinkSafe smart contract written, tested (33 passing), deployed, AND VERIFIED on Arc block explorer
 - 🔴 Frontend wallet integration: not started
 - 🔴 Real AI agent: not started
 - 🔴 Frontend → contract wiring: not started
@@ -51,3 +52,4 @@ AI-powered savings app on Arc (Circle's stablecoin L1). Users lock USDC for chos
 - 2026-06-26 Day 1: Repo cloned, dev server up, Active Locks section shipped to dashboard.
 - 2026-06-26 Day 2: Cleaned Lovable branding, drafted OinkSafe contract, OpenZeppelin installed, trust guarantees added. Set up Hardhat. Wrote 33-test suite — all passing.
 - 2026-06-27 Day 3: OinkSafe DEPLOYED to Arc Testnet at 0x8CA4e4037d853Fa63Ee96A100631d21F4daC29E6.
+- 2026-07-02 Day 4: OinkSafe VERIFIED on Arc block explorer (exact match). Source code publicly readable, trust guarantees visible on-chain. Contract address 0x8CA4e4037d853Fa63Ee96A100631d21F4daC29E6 now fully auditable at testnet.arcscan.app.
