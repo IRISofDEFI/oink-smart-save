@@ -12,7 +12,8 @@
     "format": "prettier --write .",
     "compile": "cross-env TS_NODE_PROJECT=tsconfig.hardhat.json hardhat compile",
     "test:contracts": "cross-env TS_NODE_PROJECT=tsconfig.hardhat.json TS_NODE_TRANSPILE_ONLY=true hardhat test",
-    "node:local": "cross-env TS_NODE_PROJECT=tsconfig.hardhat.json hardhat node"
+    "node:local": "cross-env TS_NODE_PROJECT=tsconfig.hardhat.json hardhat node",
+    "deploy:arc-testnet": "cross-env TS_NODE_PROJECT=tsconfig.hardhat.json TS_NODE_TRANSPILE_ONLY=true hardhat run scripts/deploy.cts --network arcTestnet"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
