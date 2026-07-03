@@ -44,8 +44,13 @@ function Dashboard() {
     totalLocked,
     isLoading: locksLoading,
     isError: locksError,
+    refetch: refetchLocks,
   } = useOinkLocks();
   const locksToShow = locks ? locks.slice(0, 12) : [];
+  const handleLockSuccess = () => {
+    void refetchBalance();
+    void refetchLocks();
+  };
   const navigate = useNavigate();
   const [lockOpen, setLockOpen] = useState(false);
   const [prompt, setPrompt] = useState("");
@@ -275,6 +280,7 @@ function Dashboard() {
                     </p>
                   </div>
                   <NewLockModal
+                    onSuccess={handleLockSuccess}
                     trigger={
                       <button className="rounded-full bg-gradient-brand px-6 py-2.5 text-sm font-semibold text-white transition-shadow hover:glow-purple">
                         Create your first lock
@@ -397,7 +403,7 @@ function Dashboard() {
         </div>
       </div>
 
-      <NewLockModal open={lockOpen} onOpenChange={setLockOpen} />
+      <NewLockModal open={lockOpen} onOpenChange={setLockOpen} onSuccess={handleLockSuccess} />
     </AppShell>
   );
 }
