@@ -9,11 +9,14 @@ import {
   Wallet,
   PiggyBank,
   CalendarClock,
+  RefreshCw,
 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { PigOrb } from "@/components/PigOrb";
 import { NewLockModal } from "@/components/NewLockModal";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useOink, daysRemaining, formatDate } from "@/lib/oink-store";
+import { useUsdcBalance } from "@/hooks/useUsdcBalance";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/dashboard")({
@@ -24,7 +27,8 @@ export const Route = createFileRoute("/dashboard")({
 });
 
 function Dashboard() {
-  const { connected, connect, balance, locks, totalLocked } = useOink();
+  const { connected, connect, locks, totalLocked } = useOink();
+  const { balance, isConnected, isLoading, isFetching, isError, wrongNetwork, refetch } = useUsdcBalance();
   const navigate = useNavigate();
   const [lockOpen, setLockOpen] = useState(false);
   const [prompt, setPrompt] = useState("");
@@ -82,19 +86,55 @@ function Dashboard() {
 
         {/* Stats */}
         <div className="grid gap-4 sm:grid-cols-2">
-          <div className="flex items-center gap-4 rounded-3xl border border-border bg-card/60 p-6 backdrop-blur-sm">
+          <div className="relative flex items-center gap-4 rounded-3xl border border-border bg-card/60 p-6 backdrop-blur-sm">
+            {/* Refresh button */}
+            <button
+              onClick={refetch}
+              disabled={!isConnected || wrongNetwork}
+              className="absolute right-4 top-4 flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-foreground disabled:opacity-30"
+              aria-label="Refresh balance"
+            >
+              <RefreshCw className={cn("h-3.5 w-3.5", isFetching && "animate-spin")} />
+            </button>
+
             <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-brand text-white shadow-[0_8px_30px_-6px_oklch(0.58_0.24_290_/_0.7)]">
               <Wallet className="h-6 w-6" />
             </span>
+
             <div>
               <p className="text-sm font-medium text-muted-foreground">USDC Balance</p>
-              <p className="text-2xl font-extrabold text-foreground">
-                {balance.toLocaleString(undefined, {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}{" "}
-                <span className="text-sm font-semibold text-muted-foreground">USDC</span>
-              </p>
+
+              {!isConnected && (
+                <>
+                  <p className="text-2xl font-extrabold text-foreground">—</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">Connect wallet to see balance</p>
+                </>
+              )}
+
+              {isConnected && wrongNetwork && (
+                <>
+                  <p className="text-2xl font-extrabold text-foreground">—</p>
+                  <p className="mt-0.5 text-xs text-amber-400">Switch to Arc Testnet</p>
+                </>
+              )}
+
+              {isConnected && !wrongNetwork && isLoading && (
+                <Skeleton className="mt-1 h-8 w-32" />
+              )}
+
+              {isConnected && !wrongNetwork && !isLoading && isError && (
+                <>
+                  <p className="text-2xl font-extrabold text-foreground">—</p>
+                  <p className="mt-0.5 text-xs text-red-400">Failed to load</p>
+                </>
+              )}
+
+              {isConnected && !wrongNetwork && !isLoading && !isError && (
+                <p className="text-2xl font-extrabold text-foreground">
+                  {balance ?? "—"}{" "}
+                  <span className="text-sm font-semibold text-muted-foreground">USDC</span>
+                </p>
+              )}
             </div>
           </div>
 
