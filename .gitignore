@@ -36,3 +36,6 @@ typechain-types/
 *.njsproj
 *.sln
 *.sw?
+
+# Private strategy notes — not for public repo
+FUTURE-IDEAS.md
