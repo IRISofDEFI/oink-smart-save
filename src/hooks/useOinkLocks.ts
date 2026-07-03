@@ -38,6 +38,11 @@ export function daysRemaining(unlockAt: bigint): number {
   return Math.max(0, Math.ceil((Number(unlockAt) - nowSecs) / 86_400));
 }
 
+// true when the lock's unlock time is now or in the past
+export function isLockUnlocked(unlockAt: bigint): boolean {
+  return unlockAt <= BigInt(Math.floor(Date.now() / 1000));
+}
+
 // ── Hook ─────────────────────────────────────────────────────────────────────
 
 export interface OinkLocksResult {
