@@ -7,7 +7,9 @@ import {
   Settings,
   Bell,
 } from "lucide-react";
-import { type ReactNode } from "react";
+import { type ReactNode, useEffect, useState } from "react";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { useAccount } from "wagmi";
 import { Wordmark } from "@/components/PigLogo";
 import { CosmicBackground } from "@/components/PigOrb";
 import { cn } from "@/lib/utils";
@@ -28,6 +30,8 @@ export function AppShell({
   showHeader?: boolean;
 }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   return (
     <div className="relative min-h-screen bg-background">
@@ -72,6 +76,13 @@ export function AppShell({
                 <Wordmark />
               </Link>
               <div className="ml-auto flex items-center gap-3">
+                {mounted && (
+                  <ConnectButton
+                    accountStatus={{ smallScreen: "avatar", largeScreen: "address" }}
+                    chainStatus="icon"
+                    showBalance={false}
+                  />
+                )}
                 <button className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-card/60 text-muted-foreground transition-colors hover:text-foreground">
                   <Bell className="h-5 w-5" />
                 </button>
@@ -117,16 +128,39 @@ export function AppShell({
 }
 
 export function ConnectedWallet() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  const { address, isConnected } = useAccount();
+  const connected = mounted && isConnected;
+  const displayAddress = address
+    ? `${address.slice(0, 6)}...${address.slice(-4)}`
+    : null;
+
   return (
     <div className="flex items-center gap-3 rounded-2xl border border-border bg-card/50 px-4 py-3">
-      <span className="relative flex h-2.5 w-2.5">
-        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-60" />
-        <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-green-400" />
-      </span>
-      <div className="min-w-0">
-        <p className="text-xs font-medium text-muted-foreground">Connected Wallet</p>
-        <p className="truncate font-mono text-sm font-semibold text-foreground">0xArc…7f3D</p>
-      </div>
+      {connected ? (
+        <>
+          <span className="relative flex h-2.5 w-2.5 shrink-0">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-60" />
+            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-green-400" />
+          </span>
+          <div className="min-w-0">
+            <p className="text-xs font-medium text-muted-foreground">Connected Wallet</p>
+            <p className="truncate font-mono text-sm font-semibold text-foreground">{displayAddress}</p>
+          </div>
+        </>
+      ) : (
+        <>
+          <span className="relative flex h-2.5 w-2.5 shrink-0">
+            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-zinc-500" />
+          </span>
+          <div className="min-w-0">
+            <p className="text-xs font-medium text-muted-foreground">Wallet</p>
+            <p className="truncate text-sm font-semibold text-muted-foreground">Not connected</p>
+          </div>
+        </>
+      )}
     </div>
   );
 }

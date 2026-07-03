@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportError } from "../lib/error-reporting";
 import { OinkProvider } from "../lib/oink-store";
+import { Web3Provider } from "../providers/Web3Provider";
 
 function NotFoundComponent() {
   return (
@@ -124,11 +125,13 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <OinkProvider>
-        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-        <Outlet />
-      </OinkProvider>
-    </QueryClientProvider>
+    <Web3Provider>
+      <QueryClientProvider client={queryClient}>
+        <OinkProvider>
+          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+          <Outlet />
+        </OinkProvider>
+      </QueryClientProvider>
+    </Web3Provider>
   );
 }

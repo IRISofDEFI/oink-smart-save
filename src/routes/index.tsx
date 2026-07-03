@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import {
   MessageCircle,
   Lock,
@@ -9,6 +10,7 @@ import {
   ShieldCheck,
   Brain,
 } from "lucide-react";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Wordmark } from "@/components/PigLogo";
 import { PigOrb, CosmicBackground } from "@/components/PigOrb";
 import { Button } from "@/components/ui/button";
@@ -74,6 +76,9 @@ const navLinks = ["Home", "Features", "How it Works", "About"];
 function Landing() {
   const navigate = useNavigate();
   const { connect } = useOink();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
 
   const launch = () => {
     connect();
@@ -119,15 +124,55 @@ function Landing() {
         </p>
 
         <div className="mt-10 flex flex-col items-center gap-3">
-          <Button
-            size="lg"
-            onClick={launch}
-            className="h-14 rounded-full bg-gradient-brand px-8 text-base font-semibold text-white transition-shadow hover:glow-purple"
-          >
-            <Wallet className="h-5 w-5" />
-            Connect Wallet
-            <ArrowRight className="h-5 w-5" />
-          </Button>
+          {mounted ? (
+            <ConnectButton.Custom>
+              {({ account, chain, openAccountModal, openChainModal, openConnectModal, mounted: rbMounted }) => {
+                const ready = rbMounted;
+                const connected = ready && account && chain;
+                return (
+                  <div aria-hidden={!ready} style={!ready ? { opacity: 0, pointerEvents: "none", userSelect: "none" } : undefined}>
+                    {!connected ? (
+                      <Button
+                        size="lg"
+                        onClick={openConnectModal}
+                        className="h-14 rounded-full bg-gradient-brand px-8 text-base font-semibold text-white transition-shadow hover:glow-purple"
+                      >
+                        <Wallet className="h-5 w-5" />
+                        Connect Wallet
+                        <ArrowRight className="h-5 w-5" />
+                      </Button>
+                    ) : chain.unsupported ? (
+                      <Button
+                        size="lg"
+                        onClick={openChainModal}
+                        className="h-14 rounded-full bg-red-600 px-8 text-base font-semibold text-white transition-shadow"
+                      >
+                        Wrong network
+                      </Button>
+                    ) : (
+                      <Button
+                        size="lg"
+                        onClick={openAccountModal}
+                        className="h-14 rounded-full bg-gradient-brand px-8 text-base font-semibold text-white transition-shadow hover:glow-purple"
+                      >
+                        {account.displayName}
+                      </Button>
+                    )}
+                  </div>
+                );
+              }}
+            </ConnectButton.Custom>
+          ) : (
+            <Button
+              size="lg"
+              disabled
+              className="h-14 rounded-full bg-gradient-brand px-8 text-base font-semibold text-white opacity-80"
+            >
+              <Wallet className="h-5 w-5" />
+              Connect Wallet
+              <ArrowRight className="h-5 w-5" />
+            </Button>
+          )}
           <span className="text-sm text-muted-foreground">
             Your money, locked by you — until you're ready.
           </span>
