@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
-import { ArrowUp } from "lucide-react";
+import { useEffect, useRef } from "react";
+import { ArrowUp, Loader2 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { PigLogo } from "@/components/PigLogo";
-import { useOink } from "@/lib/oink-store";
+import { useOinkAgent } from "@/hooks/useOinkAgent";
 
 export const Route = createFileRoute("/chat")({
   head: () => ({
@@ -12,68 +12,49 @@ export const Route = createFileRoute("/chat")({
   component: Chat,
 });
 
-interface Msg {
-  id: string;
-  from: "ai" | "me";
-  text: string;
-}
-
 const SUGGESTIONS = [
   "Lock 5 USDC for 30 days",
   "Show my locks",
   "Check my balance",
 ];
 
-function botReply(input: string): string {
-  const t = input.toLowerCase();
-  if (t.includes("lock") && /\d/.test(t)) {
-    return "Love it! I've set that lock up as a preview for you — just confirm the amount and date and your savings are tucked away safely until then.";
-  }
-  if (t.includes("show") || t.includes("locks")) {
-    return "You can see all your active locks on the Dashboard — each one shows the amount and exactly how many days are left before it unlocks.";
-  }
-  if (t.includes("balance") || t.includes("saved")) {
-    return "I'll keep an eye on your balance and your locked savings, and surface them whenever you ask. Everything stays in one calm, clear place.";
-  }
-  return "Got it! I can help you lock USDC, review your savings, or plan ahead. What would you like to do?";
-}
-
 function Chat() {
-  useOink();
-  const [messages, setMessages] = useState<Msg[]>([
-    {
-      id: "welcome",
-      from: "ai",
-      text: "Hi, I'm OinkAI. I'm here to help you save with calm and clarity. Tell me what you'd like to do, or tap a suggestion below.",
-    },
-  ]);
-  const [input, setInput] = useState("");
+  const {
+    messages,
+    isThinking,
+    isConfirming,
+    pendingAction,
+    sendMessage,
+    confirmAction,
+    cancelAction,
+  } = useOinkAgent();
+
   const endRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, isThinking, isConfirming, pendingAction]);
 
-  const send = (text: string) => {
-    const trimmed = text.trim();
-    if (!trimmed) return;
-    setMessages((prev) => [
-      ...prev,
-      { id: `m-${Date.now()}`, from: "me", text: trimmed },
-    ]);
-    setInput("");
-    setTimeout(() => {
-      setMessages((prev) => [
-        ...prev,
-        { id: `a-${Date.now()}`, from: "ai", text: botReply(trimmed) },
-      ]);
-    }, 600);
+  const inputDisabled = isThinking || isConfirming || !!pendingAction;
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const input = inputRef.current;
+    if (!input) return;
+    const text = input.value;
+    input.value = "";
+    void sendMessage(text);
+  };
+
+  const handleSuggestion = (text: string) => {
+    void sendMessage(text);
   };
 
   return (
     <AppShell showHeader={false}>
       <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-3xl flex-col">
-        {/* Chat header */}
+        {/* Header */}
         <div className="flex items-center gap-3 border-b border-border pb-4">
           <span className="relative flex h-11 w-11 items-center justify-center rounded-full bg-card glow-blue">
             <PigLogo className="h-7 w-7" />
@@ -92,24 +73,93 @@ function Chat() {
           {messages.map((m) => (
             <div
               key={m.id}
-              className={`flex items-end gap-2 ${m.from === "me" ? "justify-end" : "justify-start"}`}
+              className={`flex items-end gap-2 ${m.role === "user" ? "justify-end" : "justify-start"}`}
             >
-              {m.from === "ai" && (
+              {m.role === "assistant" && (
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-card">
                   <PigLogo className="h-5 w-5" />
                 </span>
               )}
               <div
                 className={`max-w-[80%] rounded-3xl px-4 py-3 text-sm leading-relaxed ${
-                  m.from === "me"
+                  m.role === "user"
                     ? "rounded-br-md bg-gradient-brand text-white glow-blue"
                     : "rounded-bl-md border border-border bg-card/70 text-foreground backdrop-blur-sm"
                 }`}
               >
-                {m.text}
+                {m.content}
               </div>
             </div>
           ))}
+
+          {/* Thinking indicator */}
+          {isThinking && (
+            <div className="flex items-end gap-2 justify-start">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-card">
+                <PigLogo className="h-5 w-5" />
+              </span>
+              <div className="rounded-3xl rounded-bl-md border border-border bg-card/70 px-4 py-3 backdrop-blur-sm">
+                <span className="flex items-center gap-1">
+                  <span className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground [animation-delay:0ms]" />
+                  <span className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground [animation-delay:150ms]" />
+                  <span className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground [animation-delay:300ms]" />
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Pending action confirmation card */}
+          {pendingAction && !isConfirming && (
+            <div className="flex items-end gap-2 justify-start">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-card">
+                <PigLogo className="h-5 w-5" />
+              </span>
+              <div className="max-w-[80%] rounded-3xl rounded-bl-md border border-purple-500/40 bg-card/80 px-4 py-3 backdrop-blur-sm">
+                <p className="text-sm font-semibold text-foreground">
+                  {pendingAction.type === "lock"
+                    ? `Lock ${pendingAction.amount} USDC for ${pendingAction.durationDays} days?`
+                    : `Withdraw ${pendingAction.amount} USDC${pendingAction.isEarly ? " (early)" : ""}?`}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {pendingAction.type === "lock"
+                    ? `Unlocks ${pendingAction.unlockDate}`
+                    : pendingAction.isEarly
+                    ? "This lock hasn't matured yet — withdrawing ends it early."
+                    : "Your lock has matured — you've earned it!"}
+                </p>
+                <div className="mt-3 flex gap-2">
+                  <button
+                    onClick={confirmAction}
+                    className="rounded-full bg-gradient-brand px-4 py-1.5 text-xs font-semibold text-white transition-shadow hover:glow-purple"
+                  >
+                    Confirm
+                  </button>
+                  <button
+                    onClick={cancelAction}
+                    className="rounded-full border border-border px-4 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Confirming tx indicator */}
+          {isConfirming && (
+            <div className="flex items-end gap-2 justify-start">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-card">
+                <PigLogo className="h-5 w-5" />
+              </span>
+              <div className="rounded-3xl rounded-bl-md border border-border bg-card/70 px-4 py-3 text-sm text-muted-foreground backdrop-blur-sm">
+                <span className="flex items-center gap-2">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  Waiting for wallet confirmation…
+                </span>
+              </div>
+            </div>
+          )}
+
           <div ref={endRef} />
         </div>
 
@@ -118,8 +168,9 @@ function Chat() {
           {SUGGESTIONS.map((s) => (
             <button
               key={s}
-              onClick={() => send(s)}
-              className="rounded-full border border-border bg-secondary/40 px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              onClick={() => handleSuggestion(s)}
+              disabled={inputDisabled}
+              className="rounded-full border border-border bg-secondary/40 px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
             >
               {s}
             </button>
@@ -128,25 +179,32 @@ function Chat() {
 
         {/* Input */}
         <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            send(input);
-          }}
+          onSubmit={handleSubmit}
           className="sticky bottom-24 flex items-center gap-2 rounded-full border border-border bg-card/80 p-2 pl-5 backdrop-blur-xl focus-within:glow-blue md:bottom-4"
         >
           <input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Message OinkAI…"
-            className="flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+            ref={inputRef}
+            disabled={inputDisabled}
+            placeholder={
+              isConfirming
+                ? "Waiting for transaction…"
+                : pendingAction
+                ? "Confirm or cancel above first"
+                : "Message OinkAI…"
+            }
+            className="flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed"
           />
           <button
             type="submit"
-            disabled={!input.trim()}
+            disabled={inputDisabled}
             className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-brand text-white transition-shadow hover:glow-purple disabled:opacity-40"
             aria-label="Send"
           >
-            <ArrowUp className="h-5 w-5" />
+            {isThinking ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+              <ArrowUp className="h-5 w-5" />
+            )}
           </button>
         </form>
       </div>
