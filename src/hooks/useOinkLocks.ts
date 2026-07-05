@@ -1,5 +1,5 @@
 import { formatUnits } from 'viem';
-import { useAccount, useReadContract } from 'wagmi';
+import { useAccount, useReadContract, useReadContracts } from 'wagmi';
 import { OINKSAFE_ADDRESS } from '@/lib/wagmi';
 import { OINKSAFE_ABI } from '@/lib/abis';
 
@@ -47,6 +47,7 @@ export function isLockUnlocked(unlockAt: bigint): boolean {
 
 export interface OinkLocksResult {
   locks: OinkLock[] | null;
+  completedLocks: OinkLock[] | null; // withdrawn locks, sorted newest first
   totalLocked: string | null;
   isConnected: boolean;
   isLoading: boolean;
@@ -62,6 +63,7 @@ export function useOinkLocks(): OinkLocksResult {
 
   const enabled = isConnected && !wrongNetwork;
 
+  // Active (non-withdrawn) locks — fast, used by dashboard and savings
   const {
     data: activeLocks,
     isPending: locksPending,
@@ -94,12 +96,59 @@ export function useOinkLocks(): OinkLocksResult {
     },
   });
 
+  // All lock IDs (including withdrawn) — used to fetch completed lock history
+  const {
+    data: userLockIds,
+    refetch: refetchIds,
+  } = useReadContract({
+    address: OINKSAFE_ADDRESS,
+    abi: OINKSAFE_ABI,
+    functionName: 'getUserLockIds',
+    args: [address ?? ZERO_ADDRESS],
+    query: {
+      enabled,
+      refetchInterval: 30_000,
+    },
+  });
+
+  const lockIdsArr = userLockIds ? (userLockIds as unknown as bigint[]) : [];
+
+  // Batch-fetch individual lock data for each ID (to get withdrawn locks)
+  const {
+    data: allLocksRaw,
+    refetch: refetchAllLocks,
+  } = useReadContracts({
+    contracts: lockIdsArr.map((id) => ({
+      address: OINKSAFE_ADDRESS,
+      abi: OINKSAFE_ABI,
+      functionName: 'getLock' as const,
+      args: [id] as const,
+    })),
+    query: {
+      enabled: enabled && lockIdsArr.length > 0,
+      refetchInterval: 30_000,
+    },
+  });
+
   const totalLocked = rawTotalLocked !== undefined
     ? formatUsdcAmount(rawTotalLocked)
     : null;
 
+  // Derive completed (withdrawn) locks from the batch result
+  const completedLocks: OinkLock[] | null = (() => {
+    if (!enabled || userLockIds === undefined) return null;
+    if (lockIdsArr.length === 0) return [];
+    if (!allLocksRaw) return null;
+    return allLocksRaw
+      .filter((r) => r.status === 'success' && r.result !== undefined)
+      .map((r) => r.result as unknown as OinkLock)
+      .filter((l) => l.withdrawn)
+      .sort((a, b) => Number(b.lockedAt) - Number(a.lockedAt));
+  })();
+
   return {
     locks: activeLocks ? (activeLocks as unknown as OinkLock[]) : null,
+    completedLocks,
     totalLocked,
     isConnected,
     // isPending is true even on disabled queries; guard so it doesn't show
@@ -110,6 +159,8 @@ export function useOinkLocks(): OinkLocksResult {
     refetch: () => {
       void refetchLocks();
       void refetchTotal();
+      void refetchIds();
+      void refetchAllLocks();
     },
   };
 }

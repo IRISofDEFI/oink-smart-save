@@ -15,11 +15,11 @@ import { CosmicBackground } from "@/components/PigOrb";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { to: "/chat", label: "Chat", icon: MessageCircle, real: true },
-  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, real: true },
-  { to: "/dashboard", label: "Savings", icon: PiggyBank, real: false },
-  { to: "/dashboard", label: "History", icon: History, real: false },
-  { to: "/dashboard", label: "Settings", icon: Settings, real: false },
+  { to: "/chat", label: "Chat", icon: MessageCircle },
+  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/savings", label: "Savings", icon: PiggyBank },
+  { to: "/history", label: "History", icon: History },
+  { to: "/settings", label: "Settings", icon: Settings },
 ] as const;
 
 export function AppShell({
@@ -46,7 +46,7 @@ export function AppShell({
 
           <nav className="mt-10 flex flex-1 flex-col gap-1">
             {navItems.map((item, i) => {
-              const active = pathname === item.to && item.real;
+              const active = pathname === item.to;
               return (
                 <Link
                   key={`${item.label}-${i}`}
@@ -99,7 +99,7 @@ export function AppShell({
       <nav className="fixed bottom-0 left-0 right-0 z-30 border-t border-border bg-background/85 backdrop-blur-xl md:hidden">
         <div className="flex items-center justify-around px-4 py-2">
           {navItems.slice(0, 4).map((item, i) => {
-            const active = pathname === item.to && item.real;
+            const active = pathname === item.to;
             return (
               <Link
                 key={`m-${item.label}-${i}`}
