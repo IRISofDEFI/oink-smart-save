@@ -137,6 +137,7 @@ function Dashboard() {
 
   const withdrawClick = () => {
     if (!hasAnyLocks) return;
+    if (typeof document === "undefined") return;
     document.getElementById("active-locks-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
