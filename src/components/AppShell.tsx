@@ -8,11 +8,18 @@ import {
   Bell,
 } from "lucide-react";
 import { type ReactNode, useEffect, useState } from "react";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { useAccount } from "wagmi";
+import {
+  ConnectButton,
+  useAccountModal,
+  useChainModal,
+  useConnectModal,
+} from "@rainbow-me/rainbowkit";
+import { useAccount, useChainId } from "wagmi";
 import { Wordmark } from "@/components/PigLogo";
 import { CosmicBackground } from "@/components/PigOrb";
 import { cn } from "@/lib/utils";
+
+const ARC_CHAIN_ID = 5042002;
 
 const navItems = [
   { to: "/chat", label: "Chat", icon: MessageCircle },
@@ -132,13 +139,33 @@ export function ConnectedWallet() {
   useEffect(() => setMounted(true), []);
 
   const { address, isConnected } = useAccount();
+  const chainId = useChainId();
+  const { openConnectModal } = useConnectModal();
+  const { openAccountModal } = useAccountModal();
+  const { openChainModal } = useChainModal();
+
   const connected = mounted && isConnected;
+  const wrongNetwork = connected && chainId !== ARC_CHAIN_ID;
   const displayAddress = address
     ? `${address.slice(0, 6)}...${address.slice(-4)}`
     : null;
 
+  const handleClick = () => {
+    if (!connected) {
+      openConnectModal?.();
+    } else if (wrongNetwork) {
+      openChainModal?.();
+    } else {
+      openAccountModal?.();
+    }
+  };
+
   return (
-    <div className="flex items-center gap-3 rounded-2xl border border-border bg-card/50 px-4 py-3">
+    <button
+      type="button"
+      onClick={handleClick}
+      className="flex items-center gap-3 rounded-2xl border border-border bg-card/50 px-4 py-3 text-left transition-colors hover:bg-white/5 cursor-pointer"
+    >
       {connected ? (
         <>
           <span className="relative flex h-2.5 w-2.5 shrink-0">
@@ -161,6 +188,6 @@ export function ConnectedWallet() {
           </div>
         </>
       )}
-    </div>
+    </button>
   );
 }
