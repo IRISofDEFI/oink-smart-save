@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import {
   MessageCircle,
   Lock,
@@ -9,6 +9,8 @@ import {
   Zap,
   ShieldCheck,
   Brain,
+  PiggyBank,
+  CircleCheck,
 } from "lucide-react";
 import { ConnectButton, useConnectModal } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
@@ -53,6 +55,24 @@ const features = [
   },
 ];
 
+const steps = [
+  {
+    icon: Wallet,
+    title: "Connect your wallet",
+    desc: "One click to connect any EVM wallet. Your keys stay yours — we never touch your funds.",
+  },
+  {
+    icon: PiggyBank,
+    title: "Lock USDC by chatting",
+    desc: "Just tell OinkAI how much to lock and for how long. It handles the smart contract call. You confirm the transaction. Done.",
+  },
+  {
+    icon: CircleCheck,
+    title: "Track and withdraw",
+    desc: "See every lock, every countdown, every completed savings goal. Withdraw any time — but the app will nudge you to stay disciplined.",
+  },
+];
+
 const pillars = [
   {
     icon: Zap,
@@ -71,7 +91,12 @@ const pillars = [
   },
 ];
 
-const navLinks = ["Home", "Features", "How it Works", "About"];
+const navLinks = [
+  { label: "Home", id: "home" },
+  { label: "Features", id: "features" },
+  { label: "How it Works", id: "how-it-works" },
+  { label: "About", id: "about" },
+];
 
 function Landing() {
   const navigate = useNavigate();
@@ -99,6 +124,10 @@ function Landing() {
     }
   };
 
+  const handleNavClick = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   return (
     <div className="relative min-h-screen overflow-hidden bg-background">
       <CosmicBackground />
@@ -108,13 +137,14 @@ function Landing() {
         <Wordmark />
         <nav className="hidden items-center gap-8 md:flex">
           {navLinks.map((l) => (
-            <a
-              key={l}
-              href="#"
+            <button
+              key={l.id}
+              type="button"
+              onClick={() => handleNavClick(l.id)}
               className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
-              {l}
-            </a>
+              {l.label}
+            </button>
           ))}
         </nav>
 
@@ -168,7 +198,7 @@ function Landing() {
       </header>
 
       {/* Hero */}
-      <section className="relative mx-auto max-w-4xl px-5 pb-16 pt-10 text-center sm:pt-16">
+      <section id="home" className="relative mx-auto max-w-4xl px-5 pb-16 pt-10 text-center sm:pt-16">
         <PigOrb priority className="mx-auto mb-10 h-44 w-44 sm:h-56 sm:w-56" />
 
         <h1 className="mx-auto max-w-2xl text-5xl font-extrabold leading-[1.05] tracking-tight text-foreground sm:text-7xl">
@@ -195,7 +225,7 @@ function Landing() {
       </section>
 
       {/* Features */}
-      <section className="mx-auto max-w-6xl px-5 py-12">
+      <section id="features" className="mx-auto max-w-6xl px-5 py-12">
         <div className="grid gap-5 sm:grid-cols-3">
           {features.map((f) => (
             <div
@@ -214,8 +244,45 @@ function Landing() {
         </div>
       </section>
 
+      {/* How it Works */}
+      <section id="how-it-works" className="mx-auto max-w-6xl px-5 py-12">
+        <div className="mx-auto max-w-2xl text-center">
+          <h2 className="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
+            How it <span className="text-gradient">Works</span>
+          </h2>
+          <p className="mt-3 text-base text-muted-foreground">
+            Save smarter in three simple steps
+          </p>
+        </div>
+
+        <div className="mt-12 flex flex-col gap-6 sm:flex-row sm:items-center sm:gap-4">
+          {steps.map((s, i) => (
+            <Fragment key={s.title}>
+              <div className="group relative flex-1 rounded-3xl border border-border bg-card/60 p-7 backdrop-blur-sm transition-all hover:-translate-y-1 hover:glow-blue">
+                <div className="relative mb-5 h-14 w-14">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-brand text-white shadow-[0_8px_30px_-6px_oklch(0.58_0.24_290_/_0.7)]">
+                    <s.icon className="h-7 w-7" />
+                  </div>
+                  <span className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full border border-border bg-background text-xs font-bold text-foreground glow-purple">
+                    {i + 1}
+                  </span>
+                </div>
+                <h3 className="text-xl font-bold text-foreground">{s.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  {s.desc}
+                </p>
+              </div>
+
+              {i < steps.length - 1 && (
+                <ArrowRight className="hidden h-5 w-5 shrink-0 text-muted-foreground/40 sm:block" />
+              )}
+            </Fragment>
+          ))}
+        </div>
+      </section>
+
       {/* Trust pillars */}
-      <section className="mx-auto max-w-6xl px-5 py-12">
+      <section id="about" className="mx-auto max-w-6xl px-5 py-12">
         <div className="grid gap-5 sm:grid-cols-3">
           {pillars.map((p) => (
             <div
