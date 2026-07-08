@@ -11,6 +11,8 @@ import {
   Brain,
   PiggyBank,
   CircleCheck,
+  Github,
+  X as XIcon,
 } from "lucide-react";
 import { ConnectButton, useConnectModal } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
@@ -88,6 +90,31 @@ const pillars = [
     icon: Brain,
     title: "AI That Understands You",
     desc: "Personalized. Private. Powerful.",
+  },
+];
+
+function NotionIcon({ className }: { className?: string }) {
+  return (
+    <span
+      className={`flex items-center justify-center rounded-[6px] border border-current text-[11px] font-bold leading-none ${className ?? ""}`}
+    >
+      N
+    </span>
+  );
+}
+
+const socialLinks = [
+  { href: "https://x.com/arc?s=20", title: "Arc on X", icon: XIcon },
+  { href: "https://x.com/oink_AI?s=20", title: "OinkAI on X", icon: XIcon },
+  {
+    href: "https://github.com/IRISofDEFI/oink-smart-save",
+    title: "OinkAI on GitHub",
+    icon: Github,
+  },
+  {
+    href: "https://app.notion.com/p/OinkAI-38e56c2fe03e80699f29ef0d14e94248?source=copy_link",
+    title: "OinkAI Whitepaper",
+    icon: NotionIcon,
   },
 ];
 
@@ -315,6 +342,22 @@ function Landing() {
             className="h-6 w-auto object-contain"
           />
           Powered by Arc
+        </div>
+
+        <div className="mx-auto mt-10 flex max-w-xs items-center justify-center gap-6 border-t border-border pt-8 sm:max-w-sm sm:gap-8">
+          {socialLinks.map((s) => (
+            <a
+              key={s.href}
+              href={s.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={s.title}
+              aria-label={s.title}
+              className="text-muted-foreground/80 transition-all hover:scale-105 hover:text-foreground"
+            >
+              <s.icon className="h-6 w-6" />
+            </a>
+          ))}
         </div>
       </footer>
     </div>
