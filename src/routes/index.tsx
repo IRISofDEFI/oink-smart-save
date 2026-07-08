@@ -309,9 +309,11 @@ function Landing() {
           <span className="text-gradient">It's your savings partner.</span>
         </p>
         <div className="mt-6 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-          <span className="flex h-6 w-6 items-center justify-center rounded-md bg-gradient-brand text-[10px] font-bold text-white">
-            ◆
-          </span>
+          <img
+            src="/arc-logo.png"
+            alt="Arc"
+            className="h-6 w-auto object-contain"
+          />
           Powered by Arc
         </div>
       </footer>
