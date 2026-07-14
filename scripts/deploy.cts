@@ -59,7 +59,7 @@ async function main(): Promise<void> {
   );
   console.log("Deployment info written to deployments/arc-testnet.json");
 
-  console.log(`\n✅ OinkSafe deployed successfully. Save this address: ${deployedAddress}`);
+  console.log(`\nOinkSafe deployed successfully. Save this address: ${deployedAddress}`);
 }
 
 main().catch((err) => {
