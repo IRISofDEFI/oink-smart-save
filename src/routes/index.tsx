@@ -112,7 +112,7 @@ const socialLinks = [
     icon: Github,
   },
   {
-    href: "https://pyrite-samba-261.notion.site/OinkAI-38e56c2fe03e80699f29ef0d14e94248",
+    href: "https://app.notion.com/p/OinkAI-38e56c2fe03e80699f29ef0d14e94248?source=copy_link",
     title: "OinkAI Whitepaper",
     icon: NotionIcon,
   },
