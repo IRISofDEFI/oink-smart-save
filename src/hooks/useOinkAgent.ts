@@ -162,11 +162,10 @@ async function runAgentLoop(
   let assistantText = '';
   let pendingAction: PendingAction | null = null;
 
-  // Capped at 5 round-trips: tool calls resolve in 1-2 turns in practice: this is a
-  // backstop against a runaway loop, not an expected depth.
   for (let i = 0; i < 5; i++) {
     const response = await provider.chat(current, OINK_TOOLS);
 
+    // Record the assistant turn
     const assistantHistMsg: ChatMessage = { role: 'assistant', content: response.message };
     if (response.toolCalls?.length) {
       assistantHistMsg.tool_calls = response.toolCalls.map(tc => ({
@@ -177,11 +176,13 @@ async function runAgentLoop(
     }
     current.push(assistantHistMsg);
 
+    // Pure text response — loop done
     if (!response.toolCalls?.length) {
       assistantText = response.message;
       break;
     }
 
+    // Execute each tool call and collect results
     for (const tc of response.toolCalls) {
       const result = executeAgentTool(tc, ctx);
       const pa = buildPendingAction(tc, result, ctx.locks);
@@ -194,8 +195,7 @@ async function runAgentLoop(
       });
     }
 
-    // A prepare_* tool needs user confirmation before continuing, so get the
-    // AI's narration of the pending action and stop here rather than looping.
+    // If a prepare_* tool ran, get the AI's narration then stop
     if (pendingAction) {
       const finalResp = await provider.chat(current, OINK_TOOLS);
       assistantText = finalResp.message;

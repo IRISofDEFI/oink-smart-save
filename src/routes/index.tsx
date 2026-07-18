@@ -258,7 +258,7 @@ function Landing() {
           {features.map((f) => (
             <div
               key={f.title}
-              className="group rounded-3xl border border-border bg-card p-7 transition-all hover:-translate-y-1 hover:glow-blue"
+              className="group rounded-3xl border border-border bg-card/60 p-7 backdrop-blur-sm transition-all hover:-translate-y-1 hover:glow-blue"
             >
               <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-brand text-white shadow-[0_8px_30px_-6px_oklch(0.58_0.24_290_/_0.7)]">
                 <f.icon className="h-7 w-7" />
@@ -286,7 +286,7 @@ function Landing() {
         <div className="mt-12 flex flex-col gap-6 sm:flex-row sm:items-center sm:gap-4">
           {steps.map((s, i) => (
             <Fragment key={s.title}>
-              <div className="group relative flex-1 rounded-3xl border border-border bg-card p-7 transition-all hover:-translate-y-1 hover:glow-blue">
+              <div className="group relative flex-1 rounded-3xl border border-border bg-card/60 p-7 backdrop-blur-sm transition-all hover:-translate-y-1 hover:glow-blue">
                 <div className="relative mb-5 h-14 w-14">
                   <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-brand text-white shadow-[0_8px_30px_-6px_oklch(0.58_0.24_290_/_0.7)]">
                     <s.icon className="h-7 w-7" />

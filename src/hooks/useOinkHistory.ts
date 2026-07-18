@@ -9,11 +9,6 @@ const ARC_CHAIN_ID = 5042002;
 // Use 9,000 to stay safely under the limit.
 const DEPLOY_BLOCK = 49439242n;
 const CHUNK_SIZE = 9000n;
-// How many 9k-block chunks to fetch concurrently per batch.
-const BATCH_CONCURRENCY = 4;
-
-// Module-level, in-memory only — cleared on full page reload, keyed by wallet address.
-const eventsCache = new Map<string, OinkEvent[]>();
 
 export interface OinkEvent {
   type: 'LockCreated' | 'LockWithdrawn';
@@ -53,21 +48,8 @@ export function useOinkHistory(): OinkHistoryResult {
   const [error, setError] = useState<Error | null>(null);
   const [loadingProgress, setLoadingProgress] = useState(0);
 
-  const fetchEvents = useCallback(async (opts?: { force?: boolean }) => {
+  const fetchEvents = useCallback(async () => {
     if (!enabled || !address || !publicClient) return;
-
-    const cacheKey = address.toLowerCase();
-    if (!opts?.force) {
-      const cached = eventsCache.get(cacheKey);
-      if (cached) {
-        setEvents(cached);
-        setIsLoading(false);
-        setIsError(false);
-        setError(null);
-        setLoadingProgress(1);
-        return;
-      }
-    }
 
     setIsLoading(true);
     setIsError(false);
@@ -77,82 +59,71 @@ export function useOinkHistory(): OinkHistoryResult {
     try {
       const currentBlock = await publicClient.getBlockNumber();
 
-      const chunkRanges: Array<{ from: bigint; to: bigint }> = [];
+      const blockRange = currentBlock >= DEPLOY_BLOCK ? currentBlock - DEPLOY_BLOCK : 0n;
+      const totalChunks = Math.ceil(Number(blockRange + 1n) / Number(CHUNK_SIZE));
+
+      const allCreated: OinkEvent[] = [];
+      const allWithdrawn: OinkEvent[] = [];
+      let chunksDone = 0;
+
       for (let chunkFrom = DEPLOY_BLOCK; chunkFrom <= currentBlock; chunkFrom += CHUNK_SIZE) {
         const chunkTo =
           chunkFrom + CHUNK_SIZE - 1n < currentBlock
             ? chunkFrom + CHUNK_SIZE - 1n
             : currentBlock;
-        chunkRanges.push({ from: chunkFrom, to: chunkTo });
-      }
 
-      const totalChunks = chunkRanges.length;
-      const allCreated: OinkEvent[] = [];
-      const allWithdrawn: OinkEvent[] = [];
-      let chunksDone = 0;
+        // Fire LockCreated and LockWithdrawn in parallel for each chunk.
+        // Chunks themselves are sequential to avoid flooding the RPC.
+        const [createdLogs, withdrawnLogs] = await Promise.all([
+          publicClient.getContractEvents({
+            address: OINKSAFE_ADDRESS,
+            abi: OINKSAFE_ABI,
+            eventName: 'LockCreated',
+            args: { owner: address },
+            fromBlock: chunkFrom,
+            toBlock: chunkTo,
+          }),
+          publicClient.getContractEvents({
+            address: OINKSAFE_ADDRESS,
+            abi: OINKSAFE_ABI,
+            eventName: 'LockWithdrawn',
+            args: { owner: address },
+            fromBlock: chunkFrom,
+            toBlock: chunkTo,
+          }),
+        ]);
 
-      // Fetch chunks in small parallel batches to speed things up without
-      // flooding the RPC with all requests at once.
-      for (let i = 0; i < chunkRanges.length; i += BATCH_CONCURRENCY) {
-        const batch = chunkRanges.slice(i, i + BATCH_CONCURRENCY);
-
-        const batchResults = await Promise.all(
-          batch.map(({ from, to }) =>
-            Promise.all([
-              publicClient.getContractEvents({
-                address: OINKSAFE_ADDRESS,
-                abi: OINKSAFE_ABI,
-                eventName: 'LockCreated',
-                args: { owner: address },
-                fromBlock: from,
-                toBlock: to,
-              }),
-              publicClient.getContractEvents({
-                address: OINKSAFE_ADDRESS,
-                abi: OINKSAFE_ABI,
-                eventName: 'LockWithdrawn',
-                args: { owner: address },
-                fromBlock: from,
-                toBlock: to,
-              }),
-            ]),
-          ),
-        );
-
-        for (const [createdLogs, withdrawnLogs] of batchResults) {
-          for (const log of createdLogs) {
-            allCreated.push({
-              type: 'LockCreated',
-              lockId: log.args.lockId!,
-              amount: log.args.amount!,
-              blockNumber: log.blockNumber ?? 0n,
-              transactionHash: (log.transactionHash ?? '0x0') as `0x${string}`,
-              durationDays: log.args.durationDays!,
-              unlockAt: log.args.unlockAt!,
-            });
-          }
-
-          for (const log of withdrawnLogs) {
-            allWithdrawn.push({
-              type: 'LockWithdrawn',
-              lockId: log.args.lockId!,
-              amount: log.args.amount!,
-              blockNumber: log.blockNumber ?? 0n,
-              transactionHash: (log.transactionHash ?? '0x0') as `0x${string}`,
-              earlyWithdrawal: log.args.earlyWithdrawal!,
-            });
-          }
-
-          chunksDone++;
-          setLoadingProgress(chunksDone / totalChunks);
+        for (const log of createdLogs) {
+          allCreated.push({
+            type: 'LockCreated',
+            lockId: log.args.lockId!,
+            amount: log.args.amount!,
+            blockNumber: log.blockNumber ?? 0n,
+            transactionHash: (log.transactionHash ?? '0x0') as `0x${string}`,
+            durationDays: log.args.durationDays!,
+            unlockAt: log.args.unlockAt!,
+          });
         }
+
+        for (const log of withdrawnLogs) {
+          allWithdrawn.push({
+            type: 'LockWithdrawn',
+            lockId: log.args.lockId!,
+            amount: log.args.amount!,
+            blockNumber: log.blockNumber ?? 0n,
+            transactionHash: (log.transactionHash ?? '0x0') as `0x${string}`,
+            earlyWithdrawal: log.args.earlyWithdrawal!,
+          });
+        }
+
+        chunksDone++;
+        setLoadingProgress(chunksDone / totalChunks);
       }
 
       const all = [...allCreated, ...allWithdrawn].sort(
         (a, b) => Number(b.blockNumber) - Number(a.blockNumber),
       );
 
-      eventsCache.set(cacheKey, all);
       setEvents(all);
     } catch (err) {
       const e = err instanceof Error ? err : new Error(String(err));
@@ -176,6 +147,6 @@ export function useOinkHistory(): OinkHistoryResult {
     loadingProgress,
     isConnected,
     wrongNetwork,
-    refetch: () => { void fetchEvents({ force: true }); },
+    refetch: () => { void fetchEvents(); },
   };
 }
