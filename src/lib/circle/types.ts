@@ -12,6 +12,11 @@ export interface CircleWalletChallenge {
   challengeId: string;
 }
 
+export interface CircleDeviceToken {
+  deviceToken: string;
+  deviceEncryptionKey: string;
+}
+
 export interface CircleErrorResponse {
   code: number;
   message: string;
