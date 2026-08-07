@@ -39,3 +39,6 @@ typechain-types/
 
 # Private strategy notes — not for public repo
 FUTURE-IDEAS.md
+
+# Contains hardcoded Circle API key — never commit
+scripts/generate-entity-secret.mjs
