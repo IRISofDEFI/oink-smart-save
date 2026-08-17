@@ -12,6 +12,17 @@ export interface CircleWalletChallenge {
   challengeId: string;
 }
 
+export interface CircleWallet {
+  id: string;
+  address: string;
+  blockchain: ChainId;
+  accountType: AccountType;
+}
+
+export interface CircleWalletsList {
+  wallets: CircleWallet[];
+}
+
 export interface CircleDeviceToken {
   deviceToken: string;
   deviceEncryptionKey: string;

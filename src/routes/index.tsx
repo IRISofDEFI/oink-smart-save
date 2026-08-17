@@ -19,6 +19,7 @@ import { useAccount } from "wagmi";
 import { Wordmark } from "@/components/PigLogo";
 import { PigOrb, CosmicBackground } from "@/components/PigOrb";
 import { Button } from "@/components/ui/button";
+import { CircleGoogleSignupButton } from "@/components/CircleGoogleSignupButton";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -246,6 +247,7 @@ function Landing() {
             Launch App
             <ArrowRight className="h-5 w-5" />
           </Button>
+          <CircleGoogleSignupButton />
           <span className="text-sm text-muted-foreground">
             Your money, locked by you — until you're ready.
           </span>
