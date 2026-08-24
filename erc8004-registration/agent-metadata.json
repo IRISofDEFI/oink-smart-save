@@ -1,0 +1,16 @@
+{
+  "name": "OinkAI",
+  "description": "Non-custodial AI savings agent on Arc. Users lock USDC into a time-locked smart contract by chatting with the agent in natural language. Built for savers in currencies that depreciate against the dollar.",
+  "image": "",
+  "agent_type": "savings",
+  "capabilities": [
+    "time_lock_usdc",
+    "natural_language_intent",
+    "non_custodial_execution",
+    "savings_scheduling"
+  ],
+  "version": "1.0.0",
+  "external_url": "https://oink-smart-save.vercel.app",
+  "contract_address": "0x8CA4e4037d853Fa63Ee96A100631d21F4daC29E6",
+  "chain": "arc-testnet"
+}
