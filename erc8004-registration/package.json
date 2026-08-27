@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "tsx --env-file=.env index.ts"
+    "start": "tsx --env-file=.env index.ts",
+    "update-metadata": "tsx --env-file=.env update-metadata.ts"
   },
   "keywords": [],
   "author": "",
