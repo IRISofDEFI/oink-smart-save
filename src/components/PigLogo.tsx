@@ -15,13 +15,13 @@ export function PigLogo({ className }: { className?: string }) {
     >
       <defs>
         <linearGradient id="oink-grad" x1="6" y1="6" x2="42" y2="42">
-          <stop offset="0%" stopColor="oklch(0.62 0.2 250)" />
-          <stop offset="55%" stopColor="oklch(0.58 0.24 290)" />
-          <stop offset="100%" stopColor="oklch(0.6 0.22 320)" />
+          <stop offset="0%" stopColor="oklch(0.842 0.166 129.5)" />
+          <stop offset="55%" stopColor="oklch(0.65 0.13 145)" />
+          <stop offset="100%" stopColor="oklch(0.47 0.1 155.6)" />
         </linearGradient>
         <radialGradient id="oink-core" cx="50%" cy="40%" r="65%">
-          <stop offset="0%" stopColor="oklch(0.75 0.16 270)" />
-          <stop offset="100%" stopColor="oklch(0.45 0.2 285)" />
+          <stop offset="0%" stopColor="oklch(0.8 0.15 135)" />
+          <stop offset="100%" stopColor="oklch(0.4 0.1 155)" />
         </radialGradient>
       </defs>
       {/* ears */}
@@ -46,7 +46,7 @@ export function Wordmark({ className }: { className?: string }) {
     <div className={cn("flex items-center gap-2", className)}>
       <span className="relative inline-flex items-center justify-center">
         <span className="absolute inset-0 -z-10 rounded-full bg-gradient-brand blur-md opacity-70" />
-        <PigLogo className="h-8 w-8 drop-shadow-[0_0_8px_oklch(0.58_0.24_290_/_0.6)]" />
+        <PigLogo className="h-8 w-8 drop-shadow-[0_0_8px_oklch(0.842_0.166_129.5_/_0.6)]" />
       </span>
       <span className="text-xl font-extrabold tracking-tight text-foreground">
         Oink<span className="text-gradient">AI</span>

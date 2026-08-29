@@ -19,7 +19,7 @@ export function PigOrb({
         width={1024}
         height={1024}
         loading={priority ? "eager" : "lazy"}
-        className={cn("h-full w-full object-contain drop-shadow-[0_10px_40px_oklch(0.58_0.24_290_/_0.55)]", float && "animate-float")}
+        className={cn("h-full w-full object-contain drop-shadow-[0_10px_40px_oklch(0.47_0.1_155.6_/_0.55)]", float && "animate-float")}
       />
     </div>
   );
