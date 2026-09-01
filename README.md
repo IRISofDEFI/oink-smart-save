@@ -20,7 +20,7 @@ Saving is hard. Saving crypto is harder — too easy to move, too tempting to to
 
 ## Status
 
-🚧 Active development. Built solo by [@Iris_of_Defi](https://x.com/Iris_of_Defi).
+🚧 Active development. Built by [@Iris_of_Defi](https://x.com/Iris_of_Defi) & [XverseLabs](https://x.com/joeboy_george).
 # OinkAI
 
 **Live at [oinnkai.xyz](https://oinnkai.xyz)**  

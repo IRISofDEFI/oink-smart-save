@@ -157,14 +157,23 @@ function SettingsPage() {
               View contract on Arcscan
             </a>
             <p>
-              Built solo by{" "}
+              Built by{" "}
               <a
                 href="https://x.com/Iris_of_DeFi"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="font-medium text-foreground transition-colors hover:text-primary"
               >
-                @Iris_of_DeFi
+                Iris
+              </a>{" "}
+              &{" "}
+              <a
+                href="https://x.com/joeboy_george"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-foreground transition-colors hover:text-primary"
+              >
+                XverseLabs
               </a>
             </p>
           </div>
