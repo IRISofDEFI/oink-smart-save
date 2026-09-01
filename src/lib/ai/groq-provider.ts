@@ -3,7 +3,7 @@ import type { AIProvider, AIResponse, AITool, AIToolResult, ChatMessage } from '
 
 export class GroqProvider implements AIProvider {
   private client: Groq;
-  private readonly model = 'llama-3.3-70b-versatile';
+  private readonly model = 'openai/gpt-oss-120b';
 
   constructor(apiKey: string) {
     this.client = new Groq({ apiKey, dangerouslyAllowBrowser: true });

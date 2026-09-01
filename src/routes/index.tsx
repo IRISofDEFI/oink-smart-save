@@ -1,9 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Fragment, useEffect, useState } from "react";
 import {
-  MessageCircle,
   Lock,
-  LineChart,
   ArrowRight,
   Wallet,
   Zap,
@@ -16,6 +14,8 @@ import {
 } from "lucide-react";
 import { ConnectButton, useConnectModal } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
+import { ChartAnalysisIcon } from "@/components/icons/ChartAnalysisIcon";
+import { MessageCircleMoreIcon } from "@/components/icons/MessageCircleMoreIcon";
 import { Wordmark } from "@/components/PigLogo";
 import { PigOrb, CosmicBackground } from "@/components/PigOrb";
 import { Button } from "@/components/ui/button";
@@ -41,7 +41,7 @@ export const Route = createFileRoute("/")({
 
 const features = [
   {
-    icon: MessageCircle,
+    icon: MessageCircleMoreIcon,
     title: "Chat to Save",
     desc: "Just tell OinkAI what you want to do. No menus, no jargon — only a friendly conversation.",
   },
@@ -51,7 +51,7 @@ const features = [
     desc: "Set aside USDC for a chosen duration. It stays put until the day you chose, safe from impulse spending.",
   },
   {
-    icon: LineChart,
+    icon: ChartAnalysisIcon,
     title: "Track Your Savings",
     desc: "See your balance, your locks, and how many days are left — all in one calm, clear place.",
   },
@@ -260,7 +260,7 @@ function Landing() {
               key={f.title}
               className="group rounded-3xl border border-border bg-card/60 p-7 backdrop-blur-sm transition-all hover:-translate-y-1 hover:glow-blue"
             >
-              <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-brand text-white shadow-[0_8px_30px_-6px_oklch(0.58_0.24_290_/_0.7)]">
+              <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-brand text-white shadow-[0_8px_30px_-6px_oklch(0.47_0.1_155.6_/_0.7)]">
                 <f.icon className="h-7 w-7" />
               </div>
               <h3 className="text-xl font-bold text-foreground">{f.title}</h3>
@@ -288,7 +288,7 @@ function Landing() {
             <Fragment key={s.title}>
               <div className="group relative flex-1 rounded-3xl border border-border bg-card/60 p-7 backdrop-blur-sm transition-all hover:-translate-y-1 hover:glow-blue">
                 <div className="relative mb-5 h-14 w-14">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-brand text-white shadow-[0_8px_30px_-6px_oklch(0.58_0.24_290_/_0.7)]">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-brand text-white shadow-[0_8px_30px_-6px_oklch(0.47_0.1_155.6_/_0.7)]">
                     <s.icon className="h-7 w-7" />
                   </div>
                   <span className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full border border-border bg-background text-xs font-bold text-foreground glow-purple">

@@ -31,7 +31,7 @@ function EventRow({ event }: { event: OinkEvent }) {
         className={cn(
           "flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-base",
           isLock
-            ? "bg-gradient-brand shadow-[0_4px_20px_-4px_oklch(0.58_0.24_290_/_0.6)]"
+            ? "bg-gradient-brand shadow-[0_4px_20px_-4px_oklch(0.47_0.1_155.6_/_0.6)]"
             : "bg-[linear-gradient(120deg,oklch(0.50_0.18_150),oklch(0.60_0.15_170))] shadow-[0_4px_20px_-4px_oklch(0.55_0.18_155_/_0.5)]",
         )}
       >
