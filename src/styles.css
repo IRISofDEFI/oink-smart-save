@@ -187,3 +187,18 @@
 @utility animate-pulse-glow {
   animation: pulse-glow 5s ease-in-out infinite;
 }
+
+@keyframes float-glow {
+  0%, 100% {
+    transform: translateY(0);
+    filter: drop-shadow(0 10px 40px oklch(0.47 0.1 155.6 / 0.35));
+  }
+  50% {
+    transform: translateY(-16px);
+    filter: drop-shadow(0 10px 55px oklch(0.47 0.1 155.6 / 0.65));
+  }
+}
+
+@utility animate-float-glow {
+  animation: float-glow 6s ease-in-out infinite;
+}

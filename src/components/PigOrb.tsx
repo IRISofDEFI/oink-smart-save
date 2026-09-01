@@ -12,14 +12,16 @@ export function PigOrb({
 }) {
   return (
     <div className={cn("relative inline-flex items-center justify-center", className)}>
-      <div className="absolute inset-0 -z-10 rounded-full bg-gradient-brand opacity-50 blur-3xl animate-pulse-glow" />
       <img
         src={pigOrb}
         alt="OinkAI, a glowing AI savings companion"
         width={1024}
         height={1024}
         loading={priority ? "eager" : "lazy"}
-        className={cn("h-full w-full object-contain drop-shadow-[0_10px_40px_oklch(0.47_0.1_155.6_/_0.55)]", float && "animate-float")}
+        className={cn(
+          "h-full w-full object-contain",
+          float ? "animate-float-glow" : "drop-shadow-[0_10px_40px_oklch(0.47_0.1_155.6_/_0.5)]",
+        )}
       />
     </div>
   );
