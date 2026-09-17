@@ -10,6 +10,14 @@ const ARC_CHAIN_ID = 5042002;
 const DEPLOY_BLOCK = 49439242n;
 const CHUNK_SIZE = 9000n;
 
+// The RPC node prunes historical state and returns "pruned history
+// unavailable" for eth_getLogs requests that reach too far back.
+// Cap how far we look back from the current block instead of always
+// scanning from DEPLOY_BLOCK, which can be far outside the retained
+// window on a long-running testnet. 90,000 blocks is comfortably inside
+// what most providers retain while still covering a generous history window.
+const MAX_LOOKBACK_BLOCKS = 90_000n;
+
 export interface OinkEvent {
   type: 'LockCreated' | 'LockWithdrawn';
   lockId: bigint;
@@ -59,14 +67,21 @@ export function useOinkHistory(): OinkHistoryResult {
     try {
       const currentBlock = await publicClient.getBlockNumber();
 
-      const blockRange = currentBlock >= DEPLOY_BLOCK ? currentBlock - DEPLOY_BLOCK : 0n;
+      // Never query further back than the RPC's retained window, even if
+      // the contract's deploy block is older than that.
+      const earliestQueryableBlock =
+        currentBlock > MAX_LOOKBACK_BLOCKS ? currentBlock - MAX_LOOKBACK_BLOCKS : 0n;
+      const startBlock =
+        DEPLOY_BLOCK > earliestQueryableBlock ? DEPLOY_BLOCK : earliestQueryableBlock;
+
+      const blockRange = currentBlock >= startBlock ? currentBlock - startBlock : 0n;
       const totalChunks = Math.ceil(Number(blockRange + 1n) / Number(CHUNK_SIZE));
 
       const allCreated: OinkEvent[] = [];
       const allWithdrawn: OinkEvent[] = [];
       let chunksDone = 0;
 
-      for (let chunkFrom = DEPLOY_BLOCK; chunkFrom <= currentBlock; chunkFrom += CHUNK_SIZE) {
+      for (let chunkFrom = startBlock; chunkFrom <= currentBlock; chunkFrom += CHUNK_SIZE) {
         const chunkTo =
           chunkFrom + CHUNK_SIZE - 1n < currentBlock
             ? chunkFrom + CHUNK_SIZE - 1n
