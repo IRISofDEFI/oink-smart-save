@@ -39,6 +39,7 @@ export async function circleFetch<T>(path: string, options: RequestInit = {}): P
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
+      "X-Request-Id": crypto.randomUUID(),
       ...headers,
     },
     body: requestBody,
