@@ -14,6 +14,19 @@ export class CircleApiError extends Error {
   }
 }
 
+// Circle wraps every successful response body in a `data` envelope
+// (confirmed against their OpenAPI schema for /users/email/token and
+// /user/initialize: both declare `{ data: { ... } }`, not a flat payload).
+// Error responses are NOT wrapped — CircleErrorResponse stays flat, handled
+// separately below.
+interface CircleDataEnvelope<T> {
+  data: T;
+}
+
+function hasDataEnvelope<T>(json: unknown): json is CircleDataEnvelope<T> {
+  return typeof json === "object" && json !== null && "data" in json;
+}
+
 // Server-only: reads CIRCLE_API_KEY from process.env, adds idempotencyKey to
 // POST bodies that don't already have one, and throws CircleApiError on non-2xx.
 export async function circleFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
@@ -48,6 +61,7 @@ export async function circleFetch<T>(path: string, options: RequestInit = {}): P
   const json = await response.json().catch(() => undefined);
 
   if (!response.ok) {
+    // Error responses are flat — { code, message } — never wrapped in `data`.
     const error = json as CircleErrorResponse | undefined;
     throw new CircleApiError(
       error?.message ?? `Circle API request failed with status ${response.status}`,
@@ -56,5 +70,12 @@ export async function circleFetch<T>(path: string, options: RequestInit = {}): P
     );
   }
 
+  // Success responses are wrapped: { data: T }. Unwrap it so callers get the
+  // payload shape their types already describe. Some endpoints (or an
+  // unexpected response) may not have a `data` key — fall back to the raw
+  // body rather than throwing, since that's still the best available value.
+  if (hasDataEnvelope<T>(json)) {
+    return json.data;
+  }
   return json as T;
 }
