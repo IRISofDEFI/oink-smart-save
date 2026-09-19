@@ -202,3 +202,31 @@
 @utility animate-float-glow {
   animation: float-glow 6s ease-in-out infinite;
 }
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Longhand (not the `animation: ...` shorthand used above) so a separately
+   applied `delay-*` utility (from tw-animate-css, sets animation-delay only)
+   composes safely — the shorthand implicitly resets animation-delay to 0
+   regardless of class order, since it's not mentioned in it. */
+@utility animate-fade-in {
+  animation-name: fade-in;
+  animation-duration: 0.8s;
+  animation-timing-function: ease-out;
+  animation-fill-mode: both;
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@utility animate-fade-up {
+  animation-name: fade-up;
+  animation-duration: 0.8s;
+  animation-timing-function: ease-out;
+  animation-fill-mode: both;
+}

@@ -3,6 +3,7 @@ import { Fragment, useEffect, useState } from "react";
 import {
   Lock,
   ArrowRight,
+  ChevronRight,
   Wallet,
   Zap,
   ShieldCheck,
@@ -226,18 +227,39 @@ function Landing() {
       </header>
 
       {/* Hero */}
-      <section id="home" className="relative mx-auto max-w-4xl px-5 pb-16 pt-10 text-center sm:pt-16">
-        <PigOrb priority className="mx-auto mb-10 h-44 w-44 sm:h-56 sm:w-56" />
+      <section
+        id="home"
+        className="relative mx-auto max-w-4xl overflow-hidden px-5 pb-16 pt-10 text-center sm:pt-16"
+      >
+        {/* Animated grid, faded out via radial mask so it doesn't hard-edge into the page */}
+        <div className="pointer-events-none absolute inset-0 -z-10 [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_110%)]">
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,var(--border)_1px,transparent_1px),linear-gradient(to_bottom,var(--border)_1px,transparent_1px)] bg-[size:56px_56px] opacity-40" />
+        </div>
 
-        <h1 className="mx-auto max-w-2xl text-5xl font-extrabold leading-[1.05] tracking-tight text-foreground sm:text-7xl">
-          Save smarter <span className="text-gradient">with AI.</span>
+        {/* Radial glow arc at the bottom of the hero, using the brand gradient */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 flex justify-center overflow-hidden">
+          <div className="h-[24rem] w-[48rem] translate-y-1/2 rounded-[100%] bg-gradient-brand opacity-25 blur-[90px]" />
+        </div>
+
+        <PigOrb priority className="mx-auto mb-8 h-44 w-44 animate-fade-in sm:h-56 sm:w-56" />
+
+        <div className="group mx-auto mb-6 inline-flex w-fit animate-fade-in items-center gap-1.5 rounded-full border border-border bg-card/40 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground backdrop-blur-sm">
+          Save in Dollars. Built on Arc
+          <ChevronRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-0.5" />
+        </div>
+
+        <h1 className="mx-auto max-w-2xl animate-fade-up text-5xl font-extrabold leading-[1.05] tracking-tight text-foreground delay-150 sm:text-7xl">
+          Save smarter{" "}
+          <span className="bg-gradient-to-br from-foreground to-accent bg-clip-text text-transparent">
+            with AI.
+          </span>
         </h1>
-        <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground">
+        <p className="mx-auto mt-6 max-w-xl animate-fade-up text-lg leading-relaxed text-muted-foreground delay-300">
           OinkAI helps you lock USDC on Arc so you can't spend what you
           shouldn't. Think of it as a digital piggy bank — only smarter.
         </p>
 
-        <div className="mt-10 flex flex-col items-center gap-3">
+        <div className="mt-10 flex animate-fade-up flex-col items-center gap-3 delay-500">
           <Button
             size="lg"
             onClick={handleLaunchApp}
