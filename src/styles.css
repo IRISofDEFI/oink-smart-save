@@ -54,84 +54,111 @@
 :root {
   --radius: 1.1rem;
 
-  /* OinkAI brand: black / charcoal / green */
-  --background: oklch(0.159 0 0);
-  --foreground: oklch(0.99 0 0);
+  /* ── Brand constants ────────────────────────────────────────────────────
+     Light Green #A8E063 · Dark Green #1E6B42 · Black #0D0D0D
+     Charcoal    #2A2A2A · White      #FFFFFF
+     Everything below derives from these. Do not hardcode colour literals
+     in components — reference a token so the brand stays in one place. */
+  --brand-green: oklch(0.842 0.166 129.5);
+  --brand-green-deep: oklch(0.47 0.1 155.6);
+  --brand-black: oklch(0.159 0 0);
+  --brand-charcoal: oklch(0.285 0 0);
+  --brand-white: oklch(1 0 0);
+  /* Exact midpoint of the two brand greens. For glyphs that must stay
+     legible on charcoal, where the deep green alone is too dark. */
+  --brand-green-mid: oklch(0.656 0.133 142.6);
 
-  --card: oklch(0.285 0 0);
-  --card-foreground: oklch(0.99 0 0);
-  --popover: oklch(0.285 0 0);
-  --popover-foreground: oklch(0.99 0 0);
+  --background: var(--brand-black);
+  --foreground: var(--brand-white);
+
+  --card: var(--brand-charcoal);
+  --card-foreground: var(--brand-white);
+  --popover: var(--brand-charcoal);
+  --popover-foreground: var(--brand-white);
 
   /* Dark green brand fill */
-  --primary: oklch(0.47 0.1 155.6);
-  --primary-foreground: oklch(1 0 0);
+  --primary: var(--brand-green-deep);
+  --primary-foreground: var(--brand-white);
 
-  --secondary: oklch(0.285 0 0);
-  --secondary-foreground: oklch(0.99 0 0);
+  --secondary: var(--brand-charcoal);
+  --secondary-foreground: var(--brand-white);
 
   --muted: oklch(0.24 0 0);
   --muted-foreground: oklch(0.68 0 0);
 
   /* Light green primary accent */
-  --accent: oklch(0.842 0.166 129.5);
-  --accent-foreground: oklch(0.159 0 0);
+  --accent: var(--brand-green);
+  --accent-foreground: var(--brand-black);
 
   --destructive: oklch(0.62 0.22 20);
-  --destructive-foreground: oklch(0.99 0 0);
+  --destructive-foreground: var(--brand-white);
 
-  --border: oklch(0.285 0 0 / 0.6);
-  --input: oklch(0.285 0 0 / 0.7);
-  --ring: oklch(0.842 0.166 129.5);
+  --border: color-mix(in oklab, var(--brand-charcoal) 60%, transparent);
+  --input: color-mix(in oklab, var(--brand-charcoal) 70%, transparent);
+  --ring: var(--brand-green);
 
-  /* Brand accents */
-  --brand-blue: oklch(0.842 0.166 129.5);
-  --brand-purple: oklch(0.47 0.1 155.6);
-  --brand-cyan: oklch(0.65 0.13 145);
+  /* Brand accents. Names predate the palette; values are the brand greens. */
+  --brand-blue: var(--brand-green);
+  --brand-purple: var(--brand-green-deep);
+  --brand-cyan: var(--brand-green-mid);
 
+  /* Even steps along the light -> deep green axis */
   --chart-1: oklch(0.842 0.166 129.5);
-  --chart-2: oklch(0.72 0.15 140);
-  --chart-3: oklch(0.6 0.13 148);
-  --chart-4: oklch(0.47 0.1 155.6);
-  --chart-5: oklch(0.35 0.07 160);
+  --chart-2: oklch(0.749 0.15 136);
+  --chart-3: oklch(0.656 0.133 142.6);
+  --chart-4: oklch(0.563 0.117 149.1);
+  --chart-5: oklch(0.47 0.1 155.6);
 
-  --sidebar: oklch(0.159 0 0);
-  --sidebar-foreground: oklch(0.99 0 0);
-  --sidebar-primary: oklch(0.47 0.1 155.6);
-  --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.285 0 0);
-  --sidebar-accent-foreground: oklch(0.99 0 0);
-  --sidebar-border: oklch(0.285 0 0 / 0.4);
-  --sidebar-ring: oklch(0.842 0.166 129.5);
+  --sidebar: var(--brand-black);
+  --sidebar-foreground: var(--brand-white);
+  --sidebar-primary: var(--brand-green-deep);
+  --sidebar-primary-foreground: var(--brand-white);
+  --sidebar-accent: var(--brand-charcoal);
+  --sidebar-accent-foreground: var(--brand-white);
+  --sidebar-border: color-mix(in oklab, var(--brand-charcoal) 40%, transparent);
+  --sidebar-ring: var(--brand-green);
 
   /* Gradients & glows */
-  --gradient-brand: linear-gradient(120deg, oklch(0.842 0.166 129.5), oklch(0.47 0.1 155.6));
-  --gradient-brand-cyan: linear-gradient(120deg, oklch(0.842 0.166 129.5), oklch(0.65 0.13 145) 55%, oklch(0.47 0.1 155.6));
-  --glow-blue: 0 0 0 1px oklch(0.842 0.166 129.5 / 0.3), 0 12px 40px -8px oklch(0.842 0.166 129.5 / 0.55);
-  --glow-purple: 0 0 0 1px oklch(0.47 0.1 155.6 / 0.35), 0 12px 45px -8px oklch(0.47 0.1 155.6 / 0.5);
-  --glow-soft: 0 8px 40px -12px oklch(0.47 0.1 155.6 / 0.6);
+  --gradient-brand: linear-gradient(120deg, var(--brand-green), var(--brand-green-deep));
+  --gradient-brand-mid: linear-gradient(
+    120deg,
+    var(--brand-green),
+    var(--brand-green-mid) 55%,
+    var(--brand-green-deep)
+  );
+  --glow-blue:
+    0 0 0 1px color-mix(in oklab, var(--brand-green) 30%, transparent),
+    0 12px 40px -8px color-mix(in oklab, var(--brand-green) 55%, transparent);
+  --glow-purple:
+    0 0 0 1px color-mix(in oklab, var(--brand-green-deep) 35%, transparent),
+    0 12px 45px -8px color-mix(in oklab, var(--brand-green-deep) 50%, transparent);
+  --glow-soft: 0 8px 40px -12px color-mix(in oklab, var(--brand-green-deep) 60%, transparent);
+  /* Icon-tile shadow, previously a literal repeated across route files. */
+  --glow-tile: 0 8px 30px -6px color-mix(in oklab, var(--brand-green-deep) 70%, transparent);
 }
 
 .dark {
-  --background: oklch(0.159 0 0);
-  --foreground: oklch(0.99 0 0);
-  --card: oklch(0.285 0 0);
-  --card-foreground: oklch(0.99 0 0);
-  --popover: oklch(0.285 0 0);
-  --popover-foreground: oklch(0.99 0 0);
-  --primary: oklch(0.47 0.1 155.6);
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.285 0 0);
-  --secondary-foreground: oklch(0.99 0 0);
+  /* The app is dark by default; this block exists so an explicit `.dark`
+     ancestor resolves to the same brand values rather than overriding them. */
+  --background: var(--brand-black);
+  --foreground: var(--brand-white);
+  --card: var(--brand-charcoal);
+  --card-foreground: var(--brand-white);
+  --popover: var(--brand-charcoal);
+  --popover-foreground: var(--brand-white);
+  --primary: var(--brand-green-deep);
+  --primary-foreground: var(--brand-white);
+  --secondary: var(--brand-charcoal);
+  --secondary-foreground: var(--brand-white);
   --muted: oklch(0.24 0 0);
   --muted-foreground: oklch(0.68 0 0);
-  --accent: oklch(0.842 0.166 129.5);
-  --accent-foreground: oklch(0.159 0 0);
+  --accent: var(--brand-green);
+  --accent-foreground: var(--brand-black);
   --destructive: oklch(0.62 0.22 20);
-  --destructive-foreground: oklch(0.99 0 0);
-  --border: oklch(0.285 0 0 / 0.6);
-  --input: oklch(0.285 0 0 / 0.7);
-  --ring: oklch(0.842 0.166 129.5);
+  --destructive-foreground: var(--brand-white);
+  --border: color-mix(in oklab, var(--brand-charcoal) 60%, transparent);
+  --input: color-mix(in oklab, var(--brand-charcoal) 70%, transparent);
+  --ring: var(--brand-green);
 }
 
 @layer base {
@@ -148,7 +175,9 @@
 }
 
 @utility text-gradient {
-  background-image: var(--gradient-brand);
+  /* The richer three-stop ramp, so gradient headlines match the hero's
+     "with AI." rather than reading pale beside it. */
+  background-image: var(--gradient-brand-mid);
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
@@ -168,6 +197,18 @@
 
 @utility glow-soft {
   box-shadow: var(--glow-soft);
+}
+
+@utility glow-tile {
+  box-shadow: var(--glow-tile);
+}
+
+@utility bg-gradient-brand-mid {
+  background-image: var(--gradient-brand-mid);
+}
+
+@utility drop-shadow-brand {
+  filter: drop-shadow(0 10px 40px color-mix(in oklab, var(--brand-green-deep) 50%, transparent));
 }
 
 @keyframes float {
@@ -191,11 +232,11 @@
 @keyframes float-glow {
   0%, 100% {
     transform: translateY(0);
-    filter: drop-shadow(0 10px 40px oklch(0.47 0.1 155.6 / 0.35));
+    filter: drop-shadow(0 10px 40px color-mix(in oklab, var(--brand-green-deep) 35%, transparent));
   }
   50% {
     transform: translateY(-16px);
-    filter: drop-shadow(0 10px 55px oklch(0.47 0.1 155.6 / 0.65));
+    filter: drop-shadow(0 10px 55px color-mix(in oklab, var(--brand-green-deep) 65%, transparent));
   }
 }
 
@@ -229,4 +270,31 @@
   animation-duration: 0.8s;
   animation-timing-function: ease-out;
   animation-fill-mode: both;
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* Longhand for the same reason as the fade utilities above: a separately
+   applied duration/delay utility must be able to compose with it. */
+@utility animate-marquee {
+  animation-name: marquee;
+  animation-duration: 40s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+/* Kept here rather than as `hover:[animation-play-state:paused]` in the markup:
+   Tailwind does not emit a rule for that arbitrary property, so the class was
+   inert. Plain CSS also lets reduced-motion users opt out of the scroll. */
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee {
+    animation: none;
+  }
 }

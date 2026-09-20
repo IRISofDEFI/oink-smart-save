@@ -51,7 +51,7 @@ export function OtpStage({
 
   return (
     <div className="space-y-5 text-center">
-      <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-brand text-white shadow-[0_8px_30px_-6px_oklch(0.47_0.1_155.6_/_0.7)]">
+      <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-brand text-white glow-tile">
         <MailCheck className="h-7 w-7" />
       </span>
 

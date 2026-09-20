@@ -58,7 +58,7 @@ function Savings() {
         <div className="grid gap-4 sm:grid-cols-2">
           {/* Currently Locked */}
           <div className="flex items-center gap-4 rounded-3xl border border-border bg-card/60 p-6 backdrop-blur-sm">
-            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-brand text-xl shadow-[0_8px_30px_-6px_oklch(0.47_0.1_155.6_/_0.7)]">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-brand text-xl glow-tile">
               🔒
             </span>
             <div>
@@ -78,7 +78,7 @@ function Savings() {
 
           {/* Total Ever Locked */}
           <div className="flex items-center gap-4 rounded-3xl border border-border bg-card/60 p-6 backdrop-blur-sm glow-blue">
-            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-brand text-xl shadow-[0_8px_30px_-6px_oklch(0.47_0.1_155.6_/_0.7)]">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-brand text-xl glow-tile">
               📊
             </span>
             <div>
@@ -190,9 +190,7 @@ function Savings() {
                       <span
                         className={cn(
                           "shrink-0 rounded-full px-3 py-1.5 text-xs font-bold text-white",
-                          unlocked
-                            ? "bg-[linear-gradient(120deg,oklch(0.50_0.18_150),oklch(0.60_0.15_170))]"
-                            : "bg-gradient-brand",
+                          unlocked ? "bg-gradient-brand-mid" : "bg-gradient-brand",
                         )}
                       >
                         {unlocked ? "Unlocked" : `${days}d left`}
