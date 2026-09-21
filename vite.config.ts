@@ -90,6 +90,29 @@ function matchingNodeBuiltinId(source: string): string | null {
   return `node:${withoutPrefix}`;
 }
 
+// Reverse map: alias TARGET -> the real node: builtin it stands in for.
+// Required because this hook's `source` argument, despite `enforce: 'pre'`,
+// is observed to already be the ALIAS-SUBSTITUTED value for a bare
+// require('util')/require('crypto')/etc — not the original specifier.
+// Confirmed by temporary build-time logging: resolveId saw
+// source === "<abs path>/node_modules/util/util.js" and
+// source === "crypto-browserify" (never the original bare "util"/"crypto")
+// for react-dom/cjs/react-dom-server.node.production.js's own internal
+// require('util')/require('crypto') calls in the nitro environment — i.e.
+// Vite's alias resolution runs before this 'pre' hook sees the specifier,
+// for at least this class of CJS interop. That import is NOT dead code
+// (unlike the Circle SDK's jws/jwa, which only ever run inside a client-only
+// callback): react-dom-server calls util.TextEncoder / crypto APIs
+// immediately while rendering every SSR request, so getting the browser
+// polyfill instead of the real module crashed every request in production
+// with "TypeError: util.TextEncoder is not a constructor". Matching on the
+// alias's own output — which this file already defines, in
+// CLIENT_ONLY_ALIAS_TARGETS — sidesteps needing to know *why* the hook sees
+// a post-alias value; it just undoes it for every non-client environment.
+const ALIAS_TARGET_TO_NODE_BUILTIN: Record<string, string> = Object.fromEntries(
+  Object.entries(CLIENT_ONLY_ALIAS_TARGETS).map(([builtin, target]) => [target, `node:${builtin}`]),
+);
+
 function clientOnlyNodeShimsPlugin(): Plugin {
   return {
     name: "force-real-node-builtins-outside-client",
@@ -102,16 +125,20 @@ function clientOnlyNodeShimsPlugin(): Plugin {
       const envName = this.environment?.name;
       if (envName === "client" || !envName) return null;
 
+      // Case 1: the original bare/node:-prefixed specifier, unaliased.
+      // Confirmed firing and correctly redirecting (via temporary console
+      // logging during a real `NITRO_PRESET=vercel npm run build`) for the
+      // nitro environment, which does normal full-plugin-list bundling.
       const nodeId = matchingNodeBuiltinId(source);
-      if (!nodeId) return null;
+      if (nodeId) return { id: nodeId, external: true };
 
-      // Force the real, external Node builtin — never bundled, never
-      // substituted — regardless of what environments.<name>.resolve.alias
-      // currently contains for this environment. Confirmed firing and
-      // correctly redirecting (via temporary console logging during a real
-      // `NITRO_PRESET=vercel npm run build`) for the nitro environment,
-      // which does normal full-plugin-list bundling.
-      return { id: nodeId, external: true };
+      // Case 2: the alias has already fired and handed us its target —
+      // reverse it back to the real builtin. See the comment on
+      // ALIAS_TARGET_TO_NODE_BUILTIN above for how this was discovered.
+      const reversedNodeId = ALIAS_TARGET_TO_NODE_BUILTIN[source];
+      if (reversedNodeId) return { id: reversedNodeId, external: true };
+
+      return null;
     },
   };
 }

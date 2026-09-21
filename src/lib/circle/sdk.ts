@@ -1,4 +1,13 @@
-import { W3SSdk } from "@circle-fin/w3s-pw-web-sdk";
+// Type-only: erased at build time. Do NOT add a runtime `import ... from
+// "@circle-fin/w3s-pw-web-sdk"` at module scope here — this file is (or may
+// again become) reachable from server-side code paths via barrel imports,
+// and the SDK's dependency chain (jsonwebtoken -> jws -> jwa/safe-buffer)
+// does plain require('stream')/require('util')/require('buffer')/
+// require('crypto'); evaluating it on the server replaces Node's real
+// `util` with the browser shim and crashes every request. Load it with
+// `await import("@circle-fin/w3s-pw-web-sdk")` inside a function that only
+// ever runs client-side, the way getCircleSdk() below does.
+import type { W3SSdk } from "@circle-fin/w3s-pw-web-sdk";
 
 // The SDK's package root only exports the W3SSdk class, not its Configs/
 // LoginCompleteCallback types, so derive them structurally instead of a
@@ -30,7 +39,7 @@ function readGoogleClientId(): string {
 // completing a login. Call configureCircleSdkForGoogleLogin() with real
 // values (from getCircleDeviceToken) before calling
 // performLogin(SocialLoginProvider.GOOGLE).
-export function getCircleSdk(): W3SSdk {
+export async function getCircleSdk(): Promise<W3SSdk> {
   if (typeof window === "undefined") {
     throw new Error("getCircleSdk() must be called in the browser, not during SSR");
   }
@@ -38,6 +47,8 @@ export function getCircleSdk(): W3SSdk {
   if (sdkInstance) {
     return sdkInstance;
   }
+
+  const { W3SSdk } = await import("@circle-fin/w3s-pw-web-sdk");
 
   sdkInstance = new W3SSdk({
     appSettings: { appId: readCircleAppId() },
@@ -58,11 +69,11 @@ export function getCircleSdk(): W3SSdk {
 // and the login-complete callback to the singleton. updateConfigs() replaces
 // the whole configs object rather than merging, so appSettings and the
 // Google clientId/redirectUri are re-supplied here too.
-export function configureCircleSdkForGoogleLogin(
+export async function configureCircleSdkForGoogleLogin(
   deviceCredentials: { deviceToken: string; deviceEncryptionKey: string },
   onLoginComplete: LoginCompleteCallback,
-): W3SSdk {
-  const sdk = getCircleSdk();
+): Promise<W3SSdk> {
+  const sdk = await getCircleSdk();
 
   sdk.updateConfigs(
     {

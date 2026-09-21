@@ -1,9 +1,13 @@
-// Must import before the SDK below — sets up a global `process` shim that
-// the SDK's CJS dependency chain (stream-browserify's readable-stream)
-// needs present before its module code runs. See src/lib/process-shim.ts.
-import "@/lib/process-shim";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { W3SSdk } from "@circle-fin/w3s-pw-web-sdk";
+// Type-only: erased at build time, so it carries no runtime dependency on
+// the package. The real module is loaded with a dynamic import() inside the
+// client-only mount effect below (see the comment there) — a static runtime
+// import here would pull the SDK's jsonwebtoken/jws/jwa chain (which does
+// plain require('stream')/require('util')/require('buffer')/require('crypto'))
+// into the SSR bundle, where evaluating it replaces Node's real `util` with
+// the browser shim and crashes every request with
+// "TypeError: util.TextEncoder is not a constructor".
+import type { W3SSdk } from "@circle-fin/w3s-pw-web-sdk";
 import {
   requestCircleEmailOtp,
   initializeCircleUserWallet,
@@ -145,30 +149,46 @@ export function useEmailOnboarding(): UseEmailOnboardingResult {
     }
     appIdRef.current = appId;
 
-    const onLoginComplete: LoginCompleteCallback = (loginError, result) => {
-      log("onLoginComplete fired", { error: loginError, hasResult: !!result });
-      if (loginError || !result) {
-        setPending(false);
-        setError(loginError?.message ?? "Verification failed. Please try again.");
-        return;
-      }
-      authRef.current = { userToken: result.userToken, encryptionKey: result.encryptionKey };
-      setError(null);
-      setPending(false);
-      setStage("wallet");
-      void beginWalletInitialize(result.userToken);
-    };
+    // useEffect never runs during SSR (React only fires effects after
+    // client-side hydration), so this dynamic import — and everything it
+    // pulls in — never loads or evaluates on the server. That's what keeps
+    // it out of the request path that crashed production; see the
+    // import-type comment at the top of the file for the "why".
+    void (async () => {
+      // Must resolve before the SDK import below — sets up a global
+      // `process` shim that the SDK's CJS dependency chain
+      // (stream-browserify's readable-stream) needs present before its
+      // module code runs. See src/lib/process-shim.ts. Also dynamic: it's
+      // only needed alongside the SDK, and keeping it out of the SSR graph
+      // too removes any doubt about it being a static import at all.
+      await import("@/lib/process-shim");
+      const { W3SSdk } = await import("@circle-fin/w3s-pw-web-sdk");
 
-    if (!sdkRef.current) {
-      try {
-        sdkRef.current = new W3SSdk({ appSettings: { appId } }, onLoginComplete);
-        sdkInstanceIdRef.current = Math.random().toString(36).slice(2, 10);
-        log("W3SSdk constructed successfully, instance id:", sdkInstanceIdRef.current);
-      } catch (err) {
-        logError("W3SSdk constructor threw:", err);
-        setConfigError(`Failed to initialize the sign-up SDK: ${describeError(err)}`);
+      const onLoginComplete: LoginCompleteCallback = (loginError, result) => {
+        log("onLoginComplete fired", { error: loginError, hasResult: !!result });
+        if (loginError || !result) {
+          setPending(false);
+          setError(loginError?.message ?? "Verification failed. Please try again.");
+          return;
+        }
+        authRef.current = { userToken: result.userToken, encryptionKey: result.encryptionKey };
+        setError(null);
+        setPending(false);
+        setStage("wallet");
+        void beginWalletInitialize(result.userToken);
+      };
+
+      if (!sdkRef.current) {
+        try {
+          sdkRef.current = new W3SSdk({ appSettings: { appId } }, onLoginComplete);
+          sdkInstanceIdRef.current = Math.random().toString(36).slice(2, 10);
+          log("W3SSdk constructed successfully, instance id:", sdkInstanceIdRef.current);
+        } catch (err) {
+          logError("W3SSdk constructor threw:", err);
+          setConfigError(`Failed to initialize the sign-up SDK: ${describeError(err)}`);
+        }
       }
-    }
+    })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
