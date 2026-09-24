@@ -155,13 +155,22 @@ export function useEmailOnboarding(): UseEmailOnboardingResult {
     // it out of the request path that crashed production; see the
     // import-type comment at the top of the file for the "why".
     void (async () => {
-      // Must resolve before the SDK import below — sets up a global
-      // `process` shim that the SDK's CJS dependency chain
-      // (stream-browserify's readable-stream) needs present before its
-      // module code runs. See src/lib/process-shim.ts. Also dynamic: it's
-      // only needed alongside the SDK, and keeping it out of the SSR graph
-      // too removes any doubt about it being a static import at all.
-      await import("@/lib/process-shim");
+      // Must run before the SDK import below — sets up a global `process`
+      // shim that the SDK's CJS dependency chain (stream-browserify's
+      // readable-stream) needs present before its module code runs.
+      // Dynamic: it's only needed alongside the SDK, and keeping it out of
+      // the SSR graph removes any doubt about it being a static import.
+      //
+      // The shim is invoked as a function rather than imported for its
+      // side effect. A bare `await import("@/lib/process-shim")` looked
+      // correct and still failed in production: `"sideEffects": false` in
+      // package.json let Rolldown drop the exportless module's body from
+      // the built chunk, so nothing ever assigned globalThis.process and
+      // the SDK chunk threw "process is not defined". See the long note in
+      // src/lib/process-shim.ts.
+      const { installProcessShim } = await import("@/lib/process-shim");
+      installProcessShim();
+
       const { W3SSdk } = await import("@circle-fin/w3s-pw-web-sdk");
 
       const onLoginComplete: LoginCompleteCallback = (loginError, result) => {

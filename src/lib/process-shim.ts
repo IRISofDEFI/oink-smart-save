@@ -4,20 +4,41 @@ import processPolyfill from "process";
 // the Circle SDK's CJS dependency chain) reference the ambient Node global
 // `process` (process.version, process.nextTick) without ever require()-ing
 // it — Node provides it as a global automatically, but browsers don't.
-// Side-effect-only module, imported for its evaluation order: ES modules
-// require all imports to precede other statements, so this can't be
-// inlined next to the SDK import it needs to run before — it has to be a
-// separate import that completes first. Client-only; real Node already has
-// a real `process`.
 //
-// Force-assigned, not `??=`: Vite's dev client already provides its own
-// minimal `window.process = { env: {} }` stub (confirmed by inspecting it
-// at runtime — no `.version`, no `.browser`), so a nullish-coalescing
-// assign would see that as already-defined and skip. Safe to fully
-// overwrite — the real `process` package also sets `.env = {}`, and any
-// process.env.NODE_ENV reads that matter are text-replaced by Vite's
-// `define` at build time regardless of the runtime object's content.
-if (typeof window !== "undefined") {
+// This is deliberately an exported FUNCTION that the caller invokes, not a
+// side-effect-only module body. This package.json declares
+// `"sideEffects": false`, which applies to this project's own src/** files
+// too, so Rolldown is entitled to drop any module of ours whose exports go
+// unused — body and all. That is exactly what happened to the previous
+// side-effect-only version of this file: the production client build still
+// emitted a `process-shim-*.js` chunk (so the import looked like it had
+// worked), but that chunk contained ONLY the `process` package's CJS
+// factory — the `globalThis.process = ...` assignment had been eliminated,
+// verified by grepping the built chunk for `globalThis` and finding zero
+// matches. The Circle SDK chunk then evaluated with no global `process` and
+// threw "ReferenceError: process is not defined" before W3SSdk could be
+// constructed. Dev never showed it because Vite's dev server does not
+// tree-shake. Compare src/lib/error-capture.ts, whose identical top-level
+// side effect DOES survive — only because something imports and calls its
+// `consumeLastCapturedError` export, keeping the module alive.
+//
+// A call to an imported function cannot be proven pure by the bundler, so
+// this form is immune to that elimination regardless of the sideEffects
+// declaration.
+let installed = false;
+
+export function installProcessShim(): void {
+  // Real Node already has a real `process`; never touch it server-side.
+  if (installed || typeof window === "undefined") return;
+  installed = true;
+
+  // Force-assigned, not `??=`: Vite's dev client already provides its own
+  // minimal `window.process = { env: {} }` stub (confirmed by inspecting it
+  // at runtime — no `.version`, no `.browser`), so a nullish-coalescing
+  // assign would see that as already-defined and skip. Safe to fully
+  // overwrite — the real `process` package also sets `.env = {}`, and any
+  // process.env.NODE_ENV reads that matter are text-replaced by Vite's
+  // `define` at build time regardless of the runtime object's content.
   (globalThis as unknown as { process: unknown }).process = processPolyfill;
 
   // TanStack Start's server-function client (createClientRpc.js) builds the
