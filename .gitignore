@@ -42,3 +42,5 @@ FUTURE-IDEAS.md
 
 # Contains hardcoded Circle API key — never commit
 scripts/generate-entity-secret.mjs
+.vercel/
+.output/
