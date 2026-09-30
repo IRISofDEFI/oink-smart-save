@@ -5,6 +5,7 @@ import { Eyebrow } from "./CoreFeatures";
 import { LandingButton } from "./LandingButton";
 import { links } from "./links";
 import { FadeUp, Reveal } from "./motion";
+import { GitHubPreview, WhitepaperPreview, XProfilePreview } from "./ResourcePreviews";
 
 // TODO: COPY — card labels and blurbs
 const resources = [
@@ -13,18 +14,24 @@ const resources = [
     label: "Whitepaper",
     title: "Read the OinkAI whitepaper",
     blurb: "How locks, the AI agent and Arc fit together.",
+    preview: WhitepaperPreview,
+    bg: "bg-surface",
   },
   {
     link: links.oinkX,
     label: "Updates",
     title: "Follow OinkAI on X",
     blurb: "Product updates and release notes as they ship.",
+    preview: XProfilePreview,
+    bg: "bg-ink",
   },
   {
     link: links.github,
     label: "Open source",
     title: "Browse the code on GitHub",
     blurb: "Read the contracts and the app source yourself.",
+    preview: GitHubPreview,
+    bg: "bg-brand-light",
   },
 ];
 
@@ -57,7 +64,7 @@ export function Resources() {
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {resources.map((r, i) => {
-            const Icon = r.link.icon;
+            const Preview = r.preview;
             return (
               <FadeUp key={r.link.href} delay={i * 0.1}>
                 <a
@@ -66,12 +73,10 @@ export function Resources() {
                   rel="noopener noreferrer"
                   className="group block rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4"
                 >
-                  <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-2xl bg-ink">
-                    <div
-                      aria-hidden="true"
-                      className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,color-mix(in_oklab,var(--brand-green)_30%,transparent),transparent_60%)] transition-transform duration-500 group-hover:scale-110"
-                    />
-                    <Icon className="relative h-14 w-14 text-brand-light" aria-hidden="true" />
+                  <div
+                    className={`relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-2xl ${r.bg}`}
+                  >
+                    <Preview />
                   </div>
                   <div className="mt-5 flex items-center gap-2 text-sm text-muted-foreground">
                     <span className="rounded-full bg-card px-3 py-1 text-foreground">{r.label}</span>
