@@ -174,30 +174,6 @@
   --ring: var(--brand-green);
 }
 
-/* Opt-in light scope for the landing page's white sections. The app itself
-   stays dark (see :root); only elements inside `.landing-light` resolve the
-   shadcn variables to the light palette, so existing components used there
-   pick up the right colours without any app screen changing. */
-.landing-light {
-  --background: var(--brand-white);
-  --foreground: var(--brand-black);
-  --card: var(--brand-surface);
-  --card-foreground: var(--brand-black);
-  --popover: var(--brand-white);
-  --popover-foreground: var(--brand-black);
-  --primary: var(--brand-green-deep);
-  --primary-foreground: var(--brand-white);
-  --secondary: var(--brand-surface);
-  --secondary-foreground: var(--brand-black);
-  --muted: var(--brand-surface);
-  --muted-foreground: var(--brand-muted-grey);
-  --border: color-mix(in oklab, var(--brand-black) 10%, transparent);
-  --input: color-mix(in oklab, var(--brand-black) 14%, transparent);
-  --ring: var(--brand-green-deep);
-  background-color: var(--background);
-  color: var(--foreground);
-}
-
 @layer base {
   * {
     border-color: var(--color-border);
@@ -208,6 +184,31 @@
     color: var(--color-foreground);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
+  }
+
+  /* Opt-in light scope for the landing page's white sections. The app itself
+     stays dark (see :root); only elements inside `.landing-light` resolve the
+     shadcn variables to the light palette, so existing components used there
+     pick up the right colours without any app screen changing. In the base
+     layer so a bg-* utility on the same element still wins. */
+  .landing-light {
+    --background: var(--brand-white);
+    --foreground: var(--brand-black);
+    --card: var(--brand-surface);
+    --card-foreground: var(--brand-black);
+    --popover: var(--brand-white);
+    --popover-foreground: var(--brand-black);
+    --primary: var(--brand-green-deep);
+    --primary-foreground: var(--brand-white);
+    --secondary: var(--brand-surface);
+    --secondary-foreground: var(--brand-black);
+    --muted: var(--brand-surface);
+    --muted-foreground: var(--brand-muted-grey);
+    --border: color-mix(in oklab, var(--brand-black) 10%, transparent);
+    --input: color-mix(in oklab, var(--brand-black) 14%, transparent);
+    --ring: var(--brand-green-deep);
+    background-color: var(--background);
+    color: var(--foreground);
   }
 }
 

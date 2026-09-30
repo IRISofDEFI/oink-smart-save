@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
+import { BuiltOn } from "@/components/landing/BuiltOn";
 import { ChatToSave } from "@/components/landing/ChatToSave";
 import { CoreFeatures } from "@/components/landing/CoreFeatures";
 import { FeatureStrip } from "@/components/landing/FeatureStrip";
@@ -227,7 +228,7 @@ function Landing() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-background">
+    <div className="relative min-h-screen overflow-x-clip bg-background">
       <CosmicBackground />
 
       <Navbar onLaunchApp={handleLaunchApp} />
@@ -239,6 +240,7 @@ function Landing() {
       <ChatToSave />
 
       <HowItWorks />
+      <BuiltOn />
 
       {/* Orbital roadmap */}
       <section className="mx-auto max-w-6xl px-5 py-20">
