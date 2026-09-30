@@ -1,7 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Fragment, useEffect, useRef, useState } from "react";
 import {
-  Lock,
   ArrowRight,
   Mail,
   Repeat,
@@ -18,8 +17,7 @@ import {
 } from "lucide-react";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
-import { ChartAnalysisIcon } from "@/components/icons/ChartAnalysisIcon";
-import { MessageCircleMoreIcon } from "@/components/icons/MessageCircleMoreIcon";
+import { FeatureStrip } from "@/components/landing/FeatureStrip";
 import { Hero } from "@/components/landing/Hero";
 import { Navbar } from "@/components/landing/Navbar";
 import { PigOrb, CosmicBackground } from "@/components/PigOrb";
@@ -45,24 +43,6 @@ export const Route = createFileRoute("/")({
   }),
   component: Landing,
 });
-
-const features = [
-  {
-    icon: MessageCircleMoreIcon,
-    title: "Chat to Save",
-    desc: "Just tell OinkAI what you want to do. No menus, no jargon — only a friendly conversation.",
-  },
-  {
-    icon: Lock,
-    title: "Lock USDC",
-    desc: "Set aside USDC for a chosen duration. It stays put until the day you chose, safe from impulse spending.",
-  },
-  {
-    icon: ChartAnalysisIcon,
-    title: "Track Your Savings",
-    desc: "See your balance, your locks, and how many days are left — all in one calm, clear place.",
-  },
-];
 
 const steps = [
   {
@@ -273,25 +253,7 @@ function Landing() {
 
       <Hero onLaunchApp={handleLaunchApp} coinAnchorRef={coinAnchorRef} />
 
-      {/* Features */}
-      <section id="features" className="mx-auto max-w-6xl px-5 py-24">
-        <div className="grid gap-5 sm:grid-cols-3">
-          {features.map((f) => (
-            <div
-              key={f.title}
-              className="group rounded-3xl border border-border bg-card/60 p-7 backdrop-blur-sm transition-all hover:-translate-y-1 hover:glow-blue"
-            >
-              <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-brand text-white glow-tile">
-                <f.icon className="h-7 w-7" />
-              </div>
-              <h3 className="text-xl font-bold text-foreground">{f.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                {f.desc}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
+      <FeatureStrip />
 
       {/* How it Works */}
       <section id="how-it-works" className="mx-auto max-w-6xl px-5 py-24">
