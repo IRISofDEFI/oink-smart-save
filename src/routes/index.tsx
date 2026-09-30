@@ -12,7 +12,6 @@ import { Hero } from "@/components/landing/Hero";
 import { Navbar } from "@/components/landing/Navbar";
 import { Resources } from "@/components/landing/Resources";
 import { Roadmap } from "@/components/landing/Roadmap";
-import { TestimonialsGrid } from "@/components/landing/TestimonialsGrid";
 import { Trust } from "@/components/landing/Trust";
 
 export const Route = createFileRoute("/")({
@@ -71,7 +70,6 @@ function Landing() {
       <HowItWorks />
       <BuiltOn />
       <Trust />
-      <TestimonialsGrid />
 
       <Roadmap />
       <Resources />
