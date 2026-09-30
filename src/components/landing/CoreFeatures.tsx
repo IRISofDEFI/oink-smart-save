@@ -5,6 +5,7 @@ import { ArrowRight, CircleCheck } from "lucide-react";
 import { Container } from "./Container";
 import { LandingButton } from "./LandingButton";
 import { FadeUp, Reveal } from "./motion";
+import { ScheduleWidget } from "./ScheduleWidget";
 
 /** Small eyebrow label with a check icon (brand-dark on white). */
 export function Eyebrow({ children }: { children: ReactNode }) {
@@ -52,7 +53,71 @@ export function CoreFeatures() {
             </LandingButton>
           </FadeUp>
         </div>
+
+        {/* Section F */}
+        <Spotlight />
       </Container>
     </section>
+  );
+}
+
+/**
+ * Section F. Large dark card: photo background darkened on the left, copy +
+ * button on the left, the schedule widget floating bottom-right.
+ */
+function Spotlight() {
+  return (
+    <FadeUp
+      y={40}
+      scale
+      delay={0.2}
+      className="relative overflow-hidden rounded-[28px] bg-ink p-6 md:p-12 lg:min-h-[597px] lg:p-16"
+    >
+      {/* TODO: ASSET — replace this gradient placeholder with a photo
+          (e.g. <img className="absolute inset-0 h-full w-full object-cover" />). */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 bg-charcoal bg-[radial-gradient(ellipse_at_75%_30%,color-mix(in_oklab,var(--brand-green)_45%,transparent),transparent_55%),radial-gradient(ellipse_at_90%_90%,color-mix(in_oklab,var(--brand-green-deep)_70%,transparent),transparent_60%)]"
+      />
+      {/* Left-side darkening so white text stays readable over the photo. */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 bg-gradient-to-b from-ink via-ink/85 to-ink/40 lg:bg-gradient-to-r lg:from-ink lg:via-ink/75 lg:to-transparent"
+      />
+
+      <div className="relative z-10 flex h-full max-w-[427px] flex-col items-start justify-between gap-8 lg:min-h-[469px]">
+        <div>
+          <FadeUp delay={0.3}>
+            {/* TODO: COPY — spotlight heading and paragraph */}
+            <h3 className="mb-3 text-[28px] font-semibold leading-[1.3] tracking-tight text-white md:text-[32px] lg:text-[36px]">
+              Saving on autopilot.
+            </h3>
+          </FadeUp>
+          <FadeUp delay={0.4}>
+            <p className="leading-relaxed text-white/70">
+              Pick a day, set an amount, and OinkAI tops up your goals on schedule — with every
+              save tracked in one clear timeline.
+            </p>
+          </FadeUp>
+        </div>
+        <FadeUp delay={0.5}>
+          <LandingButton variant="light" asChild>
+            <Link to="/signup">
+              Sign up with email
+              <ArrowRight />
+            </Link>
+          </LandingButton>
+        </FadeUp>
+      </div>
+
+      <FadeUp
+        x={60}
+        y={0}
+        delay={0.6}
+        className="relative z-10 mt-10 w-full max-w-[414px] lg:absolute lg:bottom-10 lg:right-10 lg:mt-0"
+      >
+        <ScheduleWidget />
+      </FadeUp>
+    </FadeUp>
   );
 }
