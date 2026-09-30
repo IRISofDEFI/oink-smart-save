@@ -13,6 +13,7 @@ import { FeatureStrip } from "@/components/landing/FeatureStrip";
 import { HowItWorks } from "@/components/landing/HowItWorks";
 import { Hero } from "@/components/landing/Hero";
 import { Navbar } from "@/components/landing/Navbar";
+import { Resources } from "@/components/landing/Resources";
 import { Roadmap } from "@/components/landing/Roadmap";
 import { TestimonialsGrid } from "@/components/landing/TestimonialsGrid";
 import { Trust } from "@/components/landing/Trust";
@@ -105,6 +106,7 @@ function Landing() {
       <TestimonialsGrid />
 
       <Roadmap />
+      <Resources />
 
       {/* Closing */}
       <footer className="mx-auto max-w-6xl px-5 py-26 text-center">
