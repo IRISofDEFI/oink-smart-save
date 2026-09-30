@@ -18,11 +18,11 @@ import { FeatureStrip } from "@/components/landing/FeatureStrip";
 import { HowItWorks } from "@/components/landing/HowItWorks";
 import { Hero } from "@/components/landing/Hero";
 import { Navbar } from "@/components/landing/Navbar";
+import { TestimonialsGrid } from "@/components/landing/TestimonialsGrid";
 import { Trust } from "@/components/landing/Trust";
 import { PigOrb, CosmicBackground } from "@/components/PigOrb";
 import { Button } from "@/components/ui/button";
 import RadialOrbitalTimeline, { type TimelineItem } from "@/components/ui/radial-orbital-timeline";
-import { Testimonials, type Testimonial } from "@/components/ui/testimonials-columns-1";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -131,59 +131,6 @@ const roadmap: TimelineItem[] = [
   },
 ];
 
-// ---------------------------------------------------------------------------
-// PLACEHOLDER COPY — these are not real customer quotes. Written to show the
-// layout only. Replace every entry with a real, attributable testimonial (and
-// add `image` for a photo) before this page is treated as marketing material.
-// ---------------------------------------------------------------------------
-const testimonials: Testimonial[] = [
-  {
-    text: "I used to raid my savings every other week. Locking the USDC for 90 days took the decision out of my hands entirely.",
-    name: "Placeholder One",
-    role: "Beta tester",
-  },
-  {
-    text: "Telling it what I wanted in plain English and watching it build the transaction was the moment it clicked for me.",
-    name: "Placeholder Two",
-    role: "Beta tester",
-  },
-  {
-    text: "Signing up with an email and never touching a seed phrase is what finally got my sister to try it.",
-    name: "Placeholder Three",
-    role: "Beta tester",
-  },
-  {
-    text: "The countdown on each lock is oddly motivating. I check it the way I used to check a step counter.",
-    name: "Placeholder Four",
-    role: "Beta tester",
-  },
-  {
-    text: "Fees on Arc are low enough that locking small amounts weekly actually makes sense.",
-    name: "Placeholder Five",
-    role: "Beta tester",
-  },
-  {
-    text: "It nudged me when I went to withdraw early. Mildly annoying, completely the point.",
-    name: "Placeholder Six",
-    role: "Beta tester",
-  },
-  {
-    text: "Everything is non-custodial, so I can verify the lock on-chain myself. That is what sold me.",
-    name: "Placeholder Seven",
-    role: "Beta tester",
-  },
-  {
-    text: "Six months in and I have not broken a single lock early. That has never happened before.",
-    name: "Placeholder Eight",
-    role: "Beta tester",
-  },
-  {
-    text: "The dashboard shows every lock and how long is left in one glance. No spreadsheet needed.",
-    name: "Placeholder Nine",
-    role: "Beta tester",
-  },
-];
-
 function Landing() {
   const navigate = useNavigate();
   const { isConnected } = useAccount();
@@ -223,6 +170,7 @@ function Landing() {
       <HowItWorks />
       <BuiltOn />
       <Trust />
+      <TestimonialsGrid />
 
       {/* Orbital roadmap */}
       <section className="mx-auto max-w-6xl px-5 py-20">
@@ -230,19 +178,6 @@ function Landing() {
           timelineData={roadmap}
           center={<PigOrb className="h-full w-full" />}
           className="h-[34rem] sm:h-[31rem] md:h-[37rem] lg:h-[44rem]"
-        />
-      </section>
-
-      {/* Testimonials */}
-      <section id="testimonials" className="mx-auto max-w-6xl px-5 py-24">
-        <Testimonials
-          testimonials={testimonials}
-          title={
-            <>
-              What our <span className="text-gradient">savers</span> say
-            </>
-          }
-          subtitle="Real talk from people building a savings habit on Arc."
         />
       </section>
 
