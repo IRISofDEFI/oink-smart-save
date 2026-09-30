@@ -1,9 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import {
   Lock,
   ArrowRight,
-  ChevronRight,
   Mail,
   Repeat,
   Sparkles,
@@ -21,6 +20,7 @@ import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
 import { ChartAnalysisIcon } from "@/components/icons/ChartAnalysisIcon";
 import { MessageCircleMoreIcon } from "@/components/icons/MessageCircleMoreIcon";
+import { Hero } from "@/components/landing/Hero";
 import { Navbar } from "@/components/landing/Navbar";
 import { PigOrb, CosmicBackground } from "@/components/PigOrb";
 import { Button } from "@/components/ui/button";
@@ -246,6 +246,7 @@ function Landing() {
   const { isConnected } = useAccount();
   const { openConnectModal } = useConnectModal();
   const [pendingNav, setPendingNav] = useState(false);
+  const coinAnchorRef = useRef<HTMLDivElement>(null);
 
   // Once wallet connects after user clicked "Launch App", complete the navigation
   useEffect(() => {
@@ -270,86 +271,7 @@ function Landing() {
 
       <Navbar onLaunchApp={handleLaunchApp} />
 
-      {/* Hero */}
-      <section
-        id="home"
-        /* `isolate` keeps the -z-10 decorative layers inside this section
-           instead of letting them fall behind the opaque page background. */
-        className="relative isolate mx-auto w-full max-w-4xl overflow-hidden rounded-b-xl px-5 pt-10 text-center sm:pt-16 md:px-8"
-      >
-        {/* Grid BG */}
-        <div
-          className="pointer-events-none absolute inset-0 -z-10 h-[600px] w-full opacity-40
-          bg-[linear-gradient(to_right,var(--border)_1px,transparent_1px),linear-gradient(to_bottom,var(--border)_1px,transparent_1px)]
-          bg-[size:56px_56px]
-          [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_110%)]"
-        />
-
-        {/* Radial accent — brand glow arc behind a dark ellipse */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 flex justify-center overflow-hidden">
-          <div className="h-[24rem] w-[48rem] translate-y-1/2 rounded-[100%] bg-gradient-brand opacity-25 blur-[90px]" />
-        </div>
-        <div
-          className="animate-fade-up pointer-events-none absolute left-1/2 top-[calc(100%-90px)] -z-10
-          h-[500px] w-[700px] -translate-x-1/2 rounded-[100%]
-          bg-[radial-gradient(closest-side,var(--background)_82%,transparent)]
-          md:h-[500px] md:w-[1100px] lg:top-[calc(100%-150px)] lg:h-[750px] lg:w-[140%]"
-        />
-
-        <PigOrb priority className="mx-auto mb-8 h-44 w-44 animate-fade-in sm:h-56 sm:w-56" />
-
-        {/* Eyebrow */}
-        <div className="animate-fade-in mb-6">
-          <span
-            className="group mx-auto flex w-fit items-center justify-center rounded-3xl border border-border bg-card/40 px-5 py-2
-            text-sm font-semibold uppercase tracking-wider text-muted-foreground backdrop-blur-sm"
-          >
-            Save in Dollars. Built on Arc
-            <ChevronRight className="ml-2 inline h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-          </span>
-        </div>
-
-        {/* Title */}
-        <h1
-          className="animate-fade-up mx-auto max-w-3xl text-balance
-          bg-gradient-to-br from-foreground from-30% to-foreground/40 bg-clip-text
-          text-5xl font-extrabold leading-[1.05] tracking-tight text-transparent
-          delay-150 sm:text-6xl md:text-7xl"
-        >
-          Save smarter{" "}
-          <span className="bg-gradient-to-br from-accent via-cyan to-primary bg-clip-text text-transparent">
-            with AI.
-          </span>
-        </h1>
-
-        {/* Subtitle */}
-        <p className="animate-fade-up mx-auto mt-6 max-w-xl text-balance text-lg leading-relaxed tracking-tight text-muted-foreground delay-300 md:text-xl">
-          OinkAI helps you lock USDC on Arc so you can't spend what you shouldn't. Think of it as a
-          digital piggy bank — only smarter.
-        </p>
-
-        {/* CTA */}
-        <div className="animate-fade-up mt-10 flex flex-col items-center gap-3 delay-500">
-          <Button
-            size="lg"
-            onClick={handleLaunchApp}
-            className="z-20 h-14 w-fit rounded-full bg-gradient-brand-mid px-8 text-base font-semibold tracking-tight text-white transition-shadow hover:glow-purple md:w-52"
-          >
-            Launch App
-            <ArrowRight className="h-5 w-5" />
-          </Button>
-          <span className="text-sm text-muted-foreground">
-            Your money, locked by you — until you're ready.
-          </span>
-        </div>
-
-        {/* Bottom Fade */}
-        <div
-          className="animate-fade-up relative mt-26 [perspective:2000px]
-          after:absolute after:inset-0 after:z-50
-          after:[background:linear-gradient(to_top,var(--background)_10%,transparent)]"
-        />
-      </section>
+      <Hero onLaunchApp={handleLaunchApp} coinAnchorRef={coinAnchorRef} />
 
       {/* Features */}
       <section id="features" className="mx-auto max-w-6xl px-5 py-24">

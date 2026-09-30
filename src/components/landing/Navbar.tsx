@@ -70,7 +70,7 @@ export function Navbar({ onLaunchApp }: { onLaunchApp: () => void }) {
               key={l.id}
               type="button"
               onClick={() => scrollToSection(l.id)}
-              className="cursor-pointer px-4 py-2 text-[15px] text-white transition-colors hover:text-brand-light"
+              className="cursor-pointer whitespace-nowrap px-4 py-2 text-[15px] text-white transition-colors hover:text-brand-light"
             >
               {l.label}
             </button>
