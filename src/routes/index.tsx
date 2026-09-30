@@ -17,11 +17,11 @@ import {
   Github,
   X as XIcon,
 } from "lucide-react";
-import { ConnectButton, useConnectModal } from "@rainbow-me/rainbowkit";
+import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
 import { ChartAnalysisIcon } from "@/components/icons/ChartAnalysisIcon";
 import { MessageCircleMoreIcon } from "@/components/icons/MessageCircleMoreIcon";
-import { Wordmark } from "@/components/PigLogo";
+import { Navbar } from "@/components/landing/Navbar";
 import { PigOrb, CosmicBackground } from "@/components/PigOrb";
 import { Button } from "@/components/ui/button";
 import RadialOrbitalTimeline, { type TimelineItem } from "@/components/ui/radial-orbital-timeline";
@@ -241,21 +241,11 @@ const testimonials: Testimonial[] = [
   },
 ];
 
-const navLinks = [
-  { label: "Home", id: "home" },
-  { label: "Features", id: "features" },
-  { label: "How it Works", id: "how-it-works" },
-  { label: "About", id: "about" },
-];
-
 function Landing() {
   const navigate = useNavigate();
   const { isConnected } = useAccount();
   const { openConnectModal } = useConnectModal();
-  const [mounted, setMounted] = useState(false);
   const [pendingNav, setPendingNav] = useState(false);
-
-  useEffect(() => setMounted(true), []);
 
   // Once wallet connects after user clicked "Launch App", complete the navigation
   useEffect(() => {
@@ -274,79 +264,11 @@ function Landing() {
     }
   };
 
-  const handleNavClick = (id: string) => {
-    if (typeof document === "undefined") return;
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
-
   return (
     <div className="relative min-h-screen overflow-hidden bg-background">
       <CosmicBackground />
 
-      {/* Nav */}
-      <header className="mx-auto flex h-20 max-w-6xl items-center justify-between px-5">
-        <Wordmark />
-        <nav className="hidden items-center gap-8 md:flex">
-          {navLinks.map((l) => (
-            <button
-              key={l.id}
-              type="button"
-              onClick={() => handleNavClick(l.id)}
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-            >
-              {l.label}
-            </button>
-          ))}
-        </nav>
-
-        {/* Top-right: Connect Wallet / connected address */}
-        {mounted ? (
-          <ConnectButton.Custom>
-            {({ account, chain, openAccountModal, openChainModal, openConnectModal: openConnect, mounted: rbMounted }) => {
-              const ready = rbMounted;
-              const connected = ready && account && chain;
-              return (
-                <div
-                  aria-hidden={!ready}
-                  style={!ready ? { opacity: 0, pointerEvents: "none", userSelect: "none" } : undefined}
-                >
-                  {!connected ? (
-                    <Button
-                      onClick={openConnect}
-                      className="rounded-full bg-gradient-brand-mid px-5 font-semibold text-white transition-shadow hover:glow-purple"
-                    >
-                      <Wallet className="h-4 w-4" />
-                      Connect Wallet
-                    </Button>
-                  ) : chain.unsupported ? (
-                    <Button
-                      onClick={openChainModal}
-                      className="rounded-full border border-amber-500/40 bg-amber-500/10 px-5 font-semibold text-amber-400 transition-colors hover:bg-amber-500/20"
-                    >
-                      Wrong Network
-                    </Button>
-                  ) : (
-                    <Button
-                      onClick={openAccountModal}
-                      className="rounded-full border border-border bg-card/80 px-5 font-mono text-sm font-semibold text-foreground transition-colors hover:bg-secondary/60"
-                    >
-                      {account.displayName}
-                    </Button>
-                  )}
-                </div>
-              );
-            }}
-          </ConnectButton.Custom>
-        ) : (
-          <Button
-            disabled
-            className="rounded-full bg-gradient-brand-mid px-5 font-semibold text-white opacity-70"
-          >
-            <Wallet className="h-4 w-4" />
-            Connect Wallet
-          </Button>
-        )}
-      </header>
+      <Navbar onLaunchApp={handleLaunchApp} />
 
       {/* Hero */}
       <section
