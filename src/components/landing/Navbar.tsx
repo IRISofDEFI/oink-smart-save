@@ -50,7 +50,7 @@ export function Navbar({ onLaunchApp }: { onLaunchApp: () => void }) {
       className={cn(
         "fixed inset-x-0 top-0 z-50 w-full border-b transition-[padding,background-color,border-color] duration-300",
         scrolled
-          ? "border-white/10 bg-ink/80 py-4 backdrop-blur-md"
+          ? "border-white/10 bg-ink/90 py-4 backdrop-blur-md"
           : "border-transparent pt-6 md:pt-10",
       )}
     >

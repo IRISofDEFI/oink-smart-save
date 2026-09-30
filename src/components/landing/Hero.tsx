@@ -96,7 +96,7 @@ export function Hero({
               coin isn't travelling (md–lg, or reduced motion). */}
           <div
             ref={coinAnchorRef}
-            className="pointer-events-none absolute left-1/2 top-[64%] hidden h-[300px] w-[300px] -translate-x-1/2 -translate-y-1/2 md:block lg:h-[360px] lg:w-[360px]"
+            className="pointer-events-none absolute left-1/2 top-[54%] hidden h-[300px] w-[300px] -translate-x-1/2 -translate-y-1/2 md:block lg:h-[360px] lg:w-[360px]"
           >
             <Enter delay={0.8} className="h-full w-full lg:hidden motion-reduce:lg:block">
               <Coin />

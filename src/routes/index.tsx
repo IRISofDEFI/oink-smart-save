@@ -253,7 +253,7 @@ function Landing() {
 
       <Hero onLaunchApp={handleLaunchApp} coinAnchorRef={coinAnchorRef} />
 
-      <FeatureStrip />
+      <FeatureStrip coinAnchorRef={coinAnchorRef} />
 
       {/* How it Works */}
       <section id="how-it-works" className="mx-auto max-w-6xl px-5 py-24">
