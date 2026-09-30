@@ -1,17 +1,13 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Fragment, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
-  ArrowRight,
   Mail,
   Repeat,
   Sparkles,
   TrendingUp,
-  Wallet,
   Zap,
   ShieldCheck,
   Brain,
-  PiggyBank,
-  CircleCheck,
   Github,
   X as XIcon,
 } from "lucide-react";
@@ -20,6 +16,7 @@ import { useAccount } from "wagmi";
 import { ChatToSave } from "@/components/landing/ChatToSave";
 import { CoreFeatures } from "@/components/landing/CoreFeatures";
 import { FeatureStrip } from "@/components/landing/FeatureStrip";
+import { HowItWorks } from "@/components/landing/HowItWorks";
 import { Hero } from "@/components/landing/Hero";
 import { Navbar } from "@/components/landing/Navbar";
 import { PigOrb, CosmicBackground } from "@/components/PigOrb";
@@ -45,24 +42,6 @@ export const Route = createFileRoute("/")({
   }),
   component: Landing,
 });
-
-const steps = [
-  {
-    icon: Wallet,
-    title: "Connect your wallet",
-    desc: "One click to connect any EVM wallet. Your keys stay yours — we never touch your funds.",
-  },
-  {
-    icon: PiggyBank,
-    title: "Lock USDC by chatting",
-    desc: "Just tell OinkAI how much to lock and for how long. It handles the smart contract call. You confirm the transaction. Done.",
-  },
-  {
-    icon: CircleCheck,
-    title: "Track and withdraw",
-    desc: "See every lock, every countdown, every completed savings goal. Withdraw any time — but the app will nudge you to stay disciplined.",
-  },
-];
 
 const pillars = [
   {
@@ -259,42 +238,7 @@ function Landing() {
       <CoreFeatures />
       <ChatToSave />
 
-      {/* How it Works */}
-      <section id="how-it-works" className="mx-auto max-w-6xl px-5 py-24">
-        <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
-            How it <span className="text-gradient">Works</span>
-          </h2>
-          <p className="mt-3 text-base text-muted-foreground">
-            Save smarter in three simple steps
-          </p>
-        </div>
-
-        <div className="mt-12 flex flex-col gap-6 sm:flex-row sm:items-center sm:gap-4">
-          {steps.map((s, i) => (
-            <Fragment key={s.title}>
-              <div className="group relative flex-1 rounded-3xl border border-border bg-card/60 p-7 backdrop-blur-sm transition-all hover:-translate-y-1 hover:glow-blue">
-                <div className="relative mb-5 h-14 w-14">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-brand text-white glow-tile">
-                    <s.icon className="h-7 w-7" />
-                  </div>
-                  <span className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full border border-border bg-background text-xs font-bold text-foreground glow-purple">
-                    {i + 1}
-                  </span>
-                </div>
-                <h3 className="text-xl font-bold text-foreground">{s.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  {s.desc}
-                </p>
-              </div>
-
-              {i < steps.length - 1 && (
-                <ArrowRight className="hidden h-5 w-5 shrink-0 text-muted-foreground/40 sm:block" />
-              )}
-            </Fragment>
-          ))}
-        </div>
-      </section>
+      <HowItWorks />
 
       {/* Orbital roadmap */}
       <section className="mx-auto max-w-6xl px-5 py-20">
