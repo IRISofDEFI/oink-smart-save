@@ -1,3 +1,5 @@
+import { LoopWhenVisible } from "./motion";
+
 /**
  * CSS/SVG illustrations for the Section G cards. Example data only, so both
  * are hidden from assistive tech.
@@ -13,7 +15,10 @@ const locks = [
 /** Mini dashboard: active locks with progress and days remaining. */
 export function LocksList() {
   return (
-    <div aria-hidden="true" className="w-full max-w-[340px] space-y-3 rounded-[18px] bg-white p-4 shadow-lg shadow-ink/5">
+    <div
+      aria-hidden="true"
+      className="w-full max-w-[340px] space-y-3 rounded-[18px] bg-white p-4 shadow-lg shadow-ink/5"
+    >
       <div className="flex items-baseline justify-between px-1">
         <span className="text-sm font-semibold text-ink">Active locks</span>
         <span className="text-xs text-muted-grey">2,250 USDC</span>
@@ -25,7 +30,10 @@ export function LocksList() {
             <span className="text-xs text-ink/80">{l.amount}</span>
           </div>
           <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-ink/10">
-            <div className="h-full rounded-full bg-brand-dark" style={{ width: `${l.progress}%` }} />
+            <div
+              className="h-full rounded-full bg-brand-dark"
+              style={{ width: `${l.progress}%` }}
+            />
           </div>
           <p className="mt-1.5 text-[11px] text-muted-grey">{l.left}</p>
         </div>
@@ -42,25 +50,32 @@ export function LockRing() {
 
   return (
     <div aria-hidden="true" className="relative h-[220px] w-[220px]">
-      {/* Outer dial: transform-only loop, paused for reduced motion. */}
-      <svg
-        viewBox="0 0 220 220"
-        className="absolute inset-0 h-full w-full animate-[spin_24s_linear_infinite] motion-reduce:animate-none"
-      >
+      {/* Outer dial: transform-only loop, paused off-screen and for reduced motion. */}
+      <LoopWhenVisible className="absolute inset-0 animate-[spin_24s_linear_infinite] motion-reduce:animate-none">
+        <svg viewBox="0 0 220 220" className="h-full w-full">
+          <circle
+            cx="110"
+            cy="110"
+            r="104"
+            fill="none"
+            stroke="var(--brand-green-deep)"
+            strokeOpacity="0.35"
+            strokeWidth="2"
+            strokeDasharray="2 10"
+            strokeLinecap="round"
+          />
+        </svg>
+      </LoopWhenVisible>
+      <svg viewBox="0 0 220 220" className="absolute inset-0 h-full w-full -rotate-90">
         <circle
           cx="110"
           cy="110"
-          r="104"
+          r={r}
           fill="none"
-          stroke="var(--brand-green-deep)"
-          strokeOpacity="0.35"
-          strokeWidth="2"
-          strokeDasharray="2 10"
-          strokeLinecap="round"
+          stroke="var(--brand-black)"
+          strokeOpacity="0.08"
+          strokeWidth="14"
         />
-      </svg>
-      <svg viewBox="0 0 220 220" className="absolute inset-0 h-full w-full -rotate-90">
-        <circle cx="110" cy="110" r={r} fill="none" stroke="var(--brand-black)" strokeOpacity="0.08" strokeWidth="14" />
         <circle
           cx="110"
           cy="110"

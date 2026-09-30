@@ -10,10 +10,10 @@ export function SavingsCard() {
   return (
     <div
       aria-hidden="true"
-      className="relative aspect-[395/257] w-full overflow-hidden rounded-[20px] bg-charcoal p-6 text-white shadow-2xl shadow-ink/60 sm:w-[395px]"
+      className="relative aspect-[395/257] w-full overflow-hidden rounded-[20px] bg-charcoal p-6 text-white shadow-xl shadow-ink/50 sm:w-[395px]"
     >
       {/* Sheen */}
-      <div className="pointer-events-none absolute -left-16 -top-24 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
+      <div className="pointer-events-none absolute -left-16 -top-24 h-64 w-64 rounded-full bg-[radial-gradient(closest-side,color-mix(in_oklab,var(--brand-white)_10%,transparent),transparent)]" />
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,transparent_55%,color-mix(in_oklab,var(--brand-white)_7%,transparent)_70%,transparent_85%)]" />
 
       <div className="relative flex h-full flex-col justify-between">
@@ -56,7 +56,7 @@ export function BalanceCard() {
   return (
     <div
       aria-hidden="true"
-      className="w-full overflow-hidden rounded-[20px] bg-white text-ink shadow-2xl shadow-ink/60 sm:w-[307px]"
+      className="w-full overflow-hidden rounded-[20px] bg-white text-ink shadow-xl shadow-ink/50 sm:w-[307px]"
     >
       <div className="flex items-center gap-3 bg-brand-light/25 px-4 py-3">
         <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white">

@@ -21,7 +21,7 @@ export function scrollToSection(id: string) {
 }
 
 /**
- * Section A. Fixed; transparent at the top, then a blurred ink bar once the
+ * Section A. Fixed; transparent at the top, then a solid ink bar once the
  * page has scrolled past 24px (Revio's threshold and 300ms transition).
  */
 export function Navbar({ onLaunchApp }: { onLaunchApp: () => void }) {
@@ -50,7 +50,7 @@ export function Navbar({ onLaunchApp }: { onLaunchApp: () => void }) {
       className={cn(
         "fixed inset-x-0 top-0 z-50 w-full border-b transition-[padding,background-color,border-color] duration-300",
         scrolled
-          ? "border-white/10 bg-ink/90 py-4 backdrop-blur-md"
+          ? "border-white/10 bg-ink/95 py-4"
           : "border-transparent pt-6 md:pt-10",
       )}
     >

@@ -1,5 +1,5 @@
-import type { CSSProperties, ReactNode } from "react";
-import { motion, useReducedMotion, type HTMLMotionProps, type Variants } from "motion/react";
+import { useRef, type CSSProperties, type ReactNode } from "react";
+import { motion, useInView, useReducedMotion, type HTMLMotionProps, type Variants } from "motion/react";
 
 import { cn } from "@/lib/utils";
 
@@ -157,6 +157,29 @@ export function Enter({
   );
 }
 
+/**
+ * Wrapper for an infinite CSS animation (`className` carries the animate-*
+ * utility). The animation only runs while the element is near the viewport,
+ * so off-screen loops cost nothing while the page scrolls.
+ */
+export function LoopWhenVisible({
+  className,
+  style,
+  children,
+}: {
+  className?: string;
+  style?: CSSProperties;
+  children?: ReactNode;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const visible = useInView(ref, { margin: "200px" });
+  return (
+    <div ref={ref} className={className} style={{ animationPlayState: visible ? "running" : "paused", ...style }}>
+      {children}
+    </div>
+  );
+}
+
 /** Gentle idle bob (CSS). Off below md and under reduced motion, as in Revio. */
 export function Float({
   slow = false,
@@ -168,8 +191,8 @@ export function Float({
   children: ReactNode;
 }) {
   return (
-    <div className={cn(slow ? "md:animate-float-card-slow" : "md:animate-float-card", className)}>
+    <LoopWhenVisible className={cn(slow ? "md:animate-float-card-slow" : "md:animate-float-card", className)}>
       {children}
-    </div>
+    </LoopWhenVisible>
   );
 }

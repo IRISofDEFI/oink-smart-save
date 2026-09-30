@@ -21,7 +21,7 @@ const tiles: Tile[] = [
   {
     id: "arc",
     label: "Arc",
-    mark: <img src="/arc-logo.png" alt="" className="h-8 w-auto object-contain md:h-10" />,
+    mark: <img src="/arc-logo.png" alt="" width={876} height={894} loading="lazy" decoding="async" className="h-8 w-auto object-contain md:h-10" />,
     pos: { m: [20, 24], d: [15, 24] },
     at: 0.45,
   },

@@ -55,13 +55,26 @@ export default function RadialOrbitalTimeline({
   const nodeSize = radius < 150 ? 44 : 56;
   const iconSize = radius < 150 ? 18 : 24;
 
+  // The rotation re-renders every 50ms, so only run it while the orbit is on
+  // (or near) screen; otherwise it keeps the main thread busy during scroll.
+  const [onScreen, setOnScreen] = useState(false);
   useEffect(() => {
-    if (!autoRotate) return;
+    const el = containerRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([entry]) => setOnScreen(entry.isIntersecting), {
+      rootMargin: "200px",
+    });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!autoRotate || !onScreen) return;
     const timer = setInterval(() => {
       setRotationAngle((prev) => Number(((prev + 0.3) % 360).toFixed(3)));
     }, 50);
     return () => clearInterval(timer);
-  }, [autoRotate]);
+  }, [autoRotate, onScreen]);
 
   const handleContainerClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === containerRef.current || e.target === orbitRef.current) {
@@ -143,9 +156,10 @@ export default function RadialOrbitalTimeline({
           className="pointer-events-none absolute z-10 flex items-center justify-center"
           style={{ width: coreSize, height: coreSize }}
         >
+          {/* Soft glow as a gradient rather than a large blur filter. */}
           <div
-            className="absolute rounded-full bg-accent/15 blur-3xl"
-            style={{ width: coreSize * 1.6, height: coreSize * 1.6 }}
+            className="absolute rounded-full bg-[radial-gradient(closest-side,color-mix(in_oklab,var(--accent)_15%,transparent),transparent)]"
+            style={{ width: coreSize * 2.2, height: coreSize * 2.2 }}
           />
           <div
             className="absolute animate-ping rounded-full border border-accent/30 opacity-70"

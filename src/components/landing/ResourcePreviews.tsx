@@ -41,8 +41,8 @@ export function XProfilePreview() {
     <img
       src="/x-profile.webp"
       alt="OinkAI's profile on X"
-      width={1215}
-      height={918}
+      width={1203}
+      height={921}
       loading="lazy"
       decoding="async"
       className={`h-auto w-[78%] rotate-3 rounded-2xl shadow-2xl shadow-brand-light/15 group-hover:-translate-y-2 group-hover:rotate-0 ${lift}`}

@@ -56,7 +56,7 @@ export function Footer({ onLaunchApp }: { onLaunchApp: () => void }) {
               </p>
             </div>
             <div className="flex items-center gap-2 text-sm text-white/60">
-              <img src="/arc-logo.png" alt="" className="h-6 w-auto object-contain" />
+              <img src="/arc-logo.png" alt="" width={876} height={894} loading="lazy" decoding="async" className="h-6 w-auto object-contain" />
               Powered by Arc
             </div>
           </div>

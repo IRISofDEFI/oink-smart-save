@@ -3,7 +3,7 @@ import { BadgeCheck, Brain, Mail, Repeat, Sparkles, TrendingUp } from "lucide-re
 import { PigOrb } from "@/components/PigOrb";
 import RadialOrbitalTimeline, { type TimelineItem } from "@/components/ui/radial-orbital-timeline";
 import { Container } from "./Container";
-import { FadeUp, Reveal } from "./motion";
+import { FadeUp, LoopWhenVisible, Reveal } from "./motion";
 
 const roadmap: TimelineItem[] = [
   {
@@ -97,7 +97,13 @@ export function Roadmap() {
         <FadeUp delay={0.2} y={40} className="mt-4">
           <RadialOrbitalTimeline
             timelineData={roadmap}
-            center={<PigOrb className="h-full w-full" />}
+            center={
+              // Same bob as PigOrb's own float, but transform-only (its built-in
+              // loop animates a drop-shadow filter, which repaints every frame).
+              <LoopWhenVisible className="h-full w-full animate-float motion-reduce:animate-none">
+                <PigOrb float={false} className="h-full w-full" />
+              </LoopWhenVisible>
+            }
             className="h-[34rem] sm:h-[31rem] md:h-[37rem] lg:h-[44rem]"
           />
         </FadeUp>
