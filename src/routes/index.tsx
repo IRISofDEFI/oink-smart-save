@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
+import { ChatToSave } from "@/components/landing/ChatToSave";
 import { CoreFeatures } from "@/components/landing/CoreFeatures";
 import { FeatureStrip } from "@/components/landing/FeatureStrip";
 import { Hero } from "@/components/landing/Hero";
@@ -256,6 +257,7 @@ function Landing() {
 
       <FeatureStrip coinAnchorRef={coinAnchorRef} />
       <CoreFeatures />
+      <ChatToSave />
 
       {/* How it Works */}
       <section id="how-it-works" className="mx-auto max-w-6xl px-5 py-24">
