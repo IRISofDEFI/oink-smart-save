@@ -49,6 +49,14 @@
   --color-blue: var(--brand-blue);
   --color-purple: var(--brand-purple);
   --color-cyan: var(--brand-cyan);
+
+  /* Landing palette — named aliases of the brand constants below. */
+  --color-brand-light: var(--brand-green);
+  --color-brand-dark: var(--brand-green-deep);
+  --color-ink: var(--brand-black);
+  --color-charcoal: var(--brand-charcoal);
+  --color-surface: var(--brand-surface);
+  --color-muted-grey: var(--brand-muted-grey);
 }
 
 :root {
@@ -67,6 +75,11 @@
   /* Exact midpoint of the two brand greens. For glyphs that must stay
      legible on charcoal, where the deep green alone is too dark. */
   --brand-green-mid: oklch(0.656 0.133 142.6);
+  /* Light-surface neutrals for the landing page's white sections.
+     Surface #F4F4F4 (cards on white); muted grey #6B6B6B (secondary text,
+     4.8:1 on surface, 5.3:1 on white). */
+  --brand-surface: oklch(0.97 0 0);
+  --brand-muted-grey: oklch(0.538 0 0);
 
   --background: var(--brand-black);
   --foreground: var(--brand-white);
@@ -159,6 +172,30 @@
   --border: color-mix(in oklab, var(--brand-charcoal) 60%, transparent);
   --input: color-mix(in oklab, var(--brand-charcoal) 70%, transparent);
   --ring: var(--brand-green);
+}
+
+/* Opt-in light scope for the landing page's white sections. The app itself
+   stays dark (see :root); only elements inside `.landing-light` resolve the
+   shadcn variables to the light palette, so existing components used there
+   pick up the right colours without any app screen changing. */
+.landing-light {
+  --background: var(--brand-white);
+  --foreground: var(--brand-black);
+  --card: var(--brand-surface);
+  --card-foreground: var(--brand-black);
+  --popover: var(--brand-white);
+  --popover-foreground: var(--brand-black);
+  --primary: var(--brand-green-deep);
+  --primary-foreground: var(--brand-white);
+  --secondary: var(--brand-surface);
+  --secondary-foreground: var(--brand-black);
+  --muted: var(--brand-surface);
+  --muted-foreground: var(--brand-muted-grey);
+  --border: color-mix(in oklab, var(--brand-black) 10%, transparent);
+  --input: color-mix(in oklab, var(--brand-black) 14%, transparent);
+  --ring: var(--brand-green-deep);
+  background-color: var(--background);
+  color: var(--foreground);
 }
 
 @layer base {
@@ -295,6 +332,53 @@
 
 @media (prefers-reduced-motion: reduce) {
   .animate-marquee {
+    animation: none;
+  }
+}
+
+/* ── Landing page motion (values from the Revio reference) ──────────────── */
+
+/* Entrance used above the fold. CSS rather than JS so the hero animates on
+   first paint without waiting for hydration. Delay is set per element via
+   inline animation-delay. */
+@keyframes enter {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@utility animate-enter {
+  animation-name: enter;
+  animation-duration: 0.8s;
+  animation-timing-function: cubic-bezier(0.21, 0.47, 0.32, 0.98);
+  animation-fill-mode: both;
+}
+
+@keyframes float-card {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+
+@utility animate-float-card {
+  animation-name: float-card;
+  animation-duration: 6s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@utility animate-float-card-slow {
+  animation-name: float-card;
+  animation-duration: 8s;
+  animation-delay: 1s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-enter {
+    animation-name: fade-in;
+  }
+  .animate-float-card,
+  .animate-float-card-slow {
     animation: none;
   }
 }
