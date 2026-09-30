@@ -5,8 +5,6 @@ import {
   Repeat,
   Sparkles,
   TrendingUp,
-  Zap,
-  ShieldCheck,
   Brain,
   Github,
   X as XIcon,
@@ -20,6 +18,7 @@ import { FeatureStrip } from "@/components/landing/FeatureStrip";
 import { HowItWorks } from "@/components/landing/HowItWorks";
 import { Hero } from "@/components/landing/Hero";
 import { Navbar } from "@/components/landing/Navbar";
+import { Trust } from "@/components/landing/Trust";
 import { PigOrb, CosmicBackground } from "@/components/PigOrb";
 import { Button } from "@/components/ui/button";
 import RadialOrbitalTimeline, { type TimelineItem } from "@/components/ui/radial-orbital-timeline";
@@ -43,24 +42,6 @@ export const Route = createFileRoute("/")({
   }),
   component: Landing,
 });
-
-const pillars = [
-  {
-    icon: Zap,
-    title: "On Arc Chain",
-    desc: "Fast. Secure. Low fees.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Your Data, Your Control",
-    desc: "Non-custodial by design.",
-  },
-  {
-    icon: Brain,
-    title: "AI That Understands You",
-    desc: "Personalized. Private. Powerful.",
-  },
-];
 
 function NotionIcon({ className }: { className?: string }) {
   return (
@@ -241,6 +222,7 @@ function Landing() {
 
       <HowItWorks />
       <BuiltOn />
+      <Trust />
 
       {/* Orbital roadmap */}
       <section className="mx-auto max-w-6xl px-5 py-20">
@@ -249,34 +231,6 @@ function Landing() {
           center={<PigOrb className="h-full w-full" />}
           className="h-[34rem] sm:h-[31rem] md:h-[37rem] lg:h-[44rem]"
         />
-      </section>
-
-      {/* Trust pillars */}
-      <section id="about" className="mx-auto max-w-6xl px-5 py-24">
-        {/* Marquee: the list is rendered twice and the track slides exactly one
-            copy's width, so the loop is seamless. Pauses on hover. */}
-        <div className="overflow-hidden [mask-image:linear-gradient(to_right,transparent,#000_6%,#000_94%,transparent)]">
-          <div className="flex w-max animate-marquee">
-            {[0, 1].map((copy) => (
-              <div key={copy} className="flex shrink-0 gap-5 pr-5" aria-hidden={copy === 1}>
-                {pillars.map((p) => (
-                  <div
-                    key={p.title}
-                    className="flex w-[21rem] shrink-0 items-start gap-4 rounded-3xl border border-border bg-card/40 p-6"
-                  >
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary text-accent">
-                      <p.icon className="h-5 w-5" />
-                    </span>
-                    <div>
-                      <p className="font-bold text-foreground">{p.title}</p>
-                      <p className="text-sm text-muted-foreground">{p.desc}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ))}
-          </div>
-        </div>
       </section>
 
       {/* Testimonials */}
