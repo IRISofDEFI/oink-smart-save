@@ -1,53 +1,18 @@
-import { Quote } from "lucide-react";
+import { ArrowUpRight, MessageSquarePlus, Quote } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Container } from "./Container";
 import { Eyebrow } from "./CoreFeatures";
 import { FadeUp, Reveal } from "./motion";
-
-type Testimonial = { text: string; name: string; role: string };
-
-// ---------------------------------------------------------------------------
-// PLACEHOLDER COPY — these are not real customer quotes. Written to show the
-// layout only. Replace every entry with a real, attributable testimonial
-// before this page is treated as marketing material.
-// ---------------------------------------------------------------------------
-// TODO: COPY — real testimonials
-const testimonials: Testimonial[] = [
-  {
-    text: "I used to raid my savings every other week. Locking the USDC for 90 days took the decision out of my hands entirely.",
-    name: "Placeholder One",
-    role: "Beta tester",
-  },
-  {
-    text: "Telling it what I wanted in plain English and watching it build the transaction was the moment it clicked for me.",
-    name: "Placeholder Two",
-    role: "Beta tester",
-  },
-  {
-    text: "Signing up with an email and never touching a seed phrase is what finally got my sister to try it.",
-    name: "Placeholder Three",
-    role: "Beta tester",
-  },
-  {
-    text: "It nudged me when I went to withdraw early. Mildly annoying, completely the point.",
-    name: "Placeholder Six",
-    role: "Beta tester",
-  },
-  {
-    text: "Everything is non-custodial, so I can verify the lock on-chain myself. That is what sold me.",
-    name: "Placeholder Seven",
-    role: "Beta tester",
-  },
-  {
-    text: "Six months in and I have not broken a single lock early. That has never happened before.",
-    name: "Placeholder Eight",
-    role: "Beta tester",
-  },
-];
+import {
+  shareFeedbackUrl,
+  testimonials,
+  type InvitationCard,
+  type RealTestimonial,
+} from "./testimonials-data";
 
 // Revio's bento: column spans and orders per breakpoint. "highlight" slots
-// replace Revio's video cards with a dark pull-quote tile.
+// are the dark tiles (Revio's video cards).
 const layout = [
   { span: "sm:col-span-6 lg:col-span-5", order: "sm:order-1 lg:order-1", highlight: false },
   { span: "sm:col-span-6 lg:col-span-3", order: "sm:order-2 lg:order-2", highlight: true },
@@ -74,55 +39,123 @@ export function TestimonialsGrid() {
           <FadeUp className="mb-1.5 md:mb-4">
             <Eyebrow>Testimonials</Eyebrow>
           </FadeUp>
+          {/* TODO: COPY — section heading (reword once real testimonials are in) */}
           <Reveal
             delay={0.1}
-            lines={["What our savers say"]}
-            className="mb-3 text-[32px] font-semibold leading-[1.2] tracking-tight md:text-[40px] lg:text-[44px]"
+            lines={["Your story could be next"]}
+            className="text-[32px] font-semibold leading-[1.2] tracking-tight md:text-[40px] lg:text-[44px]"
           />
-          <FadeUp delay={0.2}>
-            <p className="text-lg text-muted-foreground">Real talk from people building a savings habit on Arc.</p>
-          </FadeUp>
         </div>
 
         <div className="grid grid-cols-12 gap-4">
-          {testimonials.map((t, i) => {
+          {testimonials.slice(0, layout.length).map((entry, i) => {
             const slot = layout[i];
-            return (
-              <figure
-                key={t.name}
-                className={cn(
-                  "col-span-12 flex h-full flex-col justify-between gap-12 rounded-2xl p-6 md:gap-16",
-                  slot.span,
-                  slot.order,
-                  slot.highlight ? "bg-ink text-white" : "bg-card text-card-foreground",
-                )}
-              >
-                {slot.highlight && <Quote className="h-8 w-8 text-brand-light" aria-hidden="true" />}
-                <blockquote className={cn("max-w-[313px]", slot.highlight && "text-lg font-semibold leading-snug")}>
-                  {t.text}
-                </blockquote>
-                <figcaption className="flex items-center gap-4">
-                  <span
-                    aria-hidden="true"
-                    className={cn(
-                      "flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-full text-sm font-semibold",
-                      slot.highlight ? "bg-brand-light text-ink" : "bg-brand-dark text-white",
-                    )}
-                  >
-                    {initials(t.name)}
-                  </span>
-                  <span>
-                    <span className="block font-semibold">{t.name}</span>
-                    <span className={cn("block text-sm", slot.highlight ? "text-white/60" : "text-muted-foreground")}>
-                      {t.role}
-                    </span>
-                  </span>
-                </figcaption>
-              </figure>
+            const className = cn(
+              "col-span-12 flex h-full flex-col justify-between gap-12 rounded-2xl p-6 md:gap-16",
+              slot.span,
+              slot.order,
+              slot.highlight ? "bg-ink text-white" : "bg-card text-card-foreground",
+            );
+            return entry.kind === "real" ? (
+              <RealCard key={entry.id} t={entry} dark={slot.highlight} className={className} />
+            ) : (
+              <InviteCard key={entry.id} invite={entry} dark={slot.highlight} className={className} />
             );
           })}
         </div>
       </Container>
     </section>
+  );
+}
+
+type CardProps = { dark: boolean; className: string };
+
+/** Open slot: clearly an invitation, never a review. */
+function InviteCard({ dark, className }: CardProps & { invite: InvitationCard }) {
+  return (
+    <div className={className}>
+      <MessageSquarePlus className={cn("h-8 w-8", dark ? "text-brand-light" : "text-brand-dark")} aria-hidden="true" />
+      <div className="max-w-[313px]">
+        {/* TODO: COPY — invitation card text */}
+        <h3 className="text-lg font-semibold leading-snug">This spot is waiting for your story</h3>
+        <p className={cn("mt-2", dark ? "text-white/60" : "text-muted-foreground")}>
+          Tried OinkAI? Tell us how it went.
+        </p>
+      </div>
+      <a
+        href={shareFeedbackUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={cn(
+          "inline-flex h-10 w-fit items-center gap-2 rounded-[10px] px-4 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+          dark
+            ? "bg-brand-light text-ink hover:bg-brand-light/85 focus-visible:ring-offset-ink"
+            : "bg-brand-dark text-white hover:bg-brand-dark/90",
+        )}
+      >
+        Share your feedback
+        <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
+        <span className="sr-only"> on X (opens in a new tab)</span>
+      </a>
+    </div>
+  );
+}
+
+/** A real, attributable testimonial from testimonials-data.ts. */
+function RealCard({ t, dark, className }: CardProps & { t: RealTestimonial }) {
+  return (
+    <figure className={className}>
+      {dark && <Quote className="h-8 w-8 text-brand-light" aria-hidden="true" />}
+      <div className="space-y-4">
+        {t.screenshot && (
+          <img
+            src={t.screenshot.src}
+            alt={`Post by ${t.name} (${t.handle})`}
+            width={t.screenshot.width}
+            height={t.screenshot.height}
+            loading="lazy"
+            decoding="async"
+            className="h-auto w-full rounded-xl"
+          />
+        )}
+        {t.quote && (
+          <blockquote className={cn("max-w-[313px]", dark && "text-lg font-semibold leading-snug")}>{t.quote}</blockquote>
+        )}
+      </div>
+      <figcaption className="flex items-center gap-4">
+        {t.avatar ? (
+          <img
+            src={t.avatar}
+            alt=""
+            width={46}
+            height={46}
+            loading="lazy"
+            className="h-[46px] w-[46px] shrink-0 rounded-full object-cover"
+          />
+        ) : (
+          <span
+            aria-hidden="true"
+            className={cn(
+              "flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-full text-sm font-semibold",
+              dark ? "bg-brand-light text-ink" : "bg-brand-dark text-white",
+            )}
+          >
+            {initials(t.name)}
+          </span>
+        )}
+        <span className="min-w-0">
+          <span className="block font-semibold">{t.name}</span>
+          <a
+            href={t.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={cn("block text-sm hover:underline", dark ? "text-white/60" : "text-muted-foreground")}
+          >
+            {t.handle}
+            <span className="sr-only"> — view the original post (opens in a new tab)</span>
+          </a>
+        </span>
+      </figcaption>
+    </figure>
   );
 }
