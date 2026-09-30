@@ -5,6 +5,7 @@ import { ArrowRight, CircleCheck } from "lucide-react";
 import { Container } from "./Container";
 import { LandingButton } from "./LandingButton";
 import { FadeUp, Reveal } from "./motion";
+import { LockRing, LocksList } from "./CoreIllustrations";
 import { ScheduleWidget } from "./ScheduleWidget";
 
 /** Small eyebrow label with a check icon (brand-dark on white). */
@@ -54,8 +55,30 @@ export function CoreFeatures() {
           </FadeUp>
         </div>
 
-        {/* Section F */}
-        <Spotlight />
+        <div className="space-y-4">
+          {/* Section F */}
+          <Spotlight />
+
+          {/* Section G */}
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-12">
+            <FadeUp y={40} delay={0.1} className="lg:col-span-7">
+              <SmallCard
+                title="Track Your Savings"
+                description="See your balance, your locks, and how many days are left — all in one calm, clear place."
+              >
+                <LocksList />
+              </SmallCard>
+            </FadeUp>
+            <FadeUp y={40} delay={0.2} className="lg:col-span-5">
+              <SmallCard
+                title="Lock USDC"
+                description="Set aside USDC for a chosen duration. It stays put until the day you chose, safe from impulse spending."
+              >
+                <LockRing />
+              </SmallCard>
+            </FadeUp>
+          </div>
+        </div>
       </Container>
     </section>
   );
@@ -119,5 +142,25 @@ function Spotlight() {
         <ScheduleWidget />
       </FadeUp>
     </FadeUp>
+  );
+}
+
+function SmallCard({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="flex h-full flex-col rounded-2xl bg-card p-6">
+      <div className="flex flex-1 items-center justify-center px-2 py-6 md:px-8 md:py-12">{children}</div>
+      <div className="mt-6 max-w-[420px] p-2">
+        <h3 className="mb-2 text-xl font-semibold tracking-tight md:text-2xl">{title}</h3>
+        <p className="leading-relaxed text-muted-foreground">{description}</p>
+      </div>
+    </div>
   );
 }
