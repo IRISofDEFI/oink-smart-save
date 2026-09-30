@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
+import { CoreFeatures } from "@/components/landing/CoreFeatures";
 import { FeatureStrip } from "@/components/landing/FeatureStrip";
 import { Hero } from "@/components/landing/Hero";
 import { Navbar } from "@/components/landing/Navbar";
@@ -254,6 +255,7 @@ function Landing() {
       <Hero onLaunchApp={handleLaunchApp} coinAnchorRef={coinAnchorRef} />
 
       <FeatureStrip coinAnchorRef={coinAnchorRef} />
+      <CoreFeatures />
 
       {/* How it Works */}
       <section id="how-it-works" className="mx-auto max-w-6xl px-5 py-24">

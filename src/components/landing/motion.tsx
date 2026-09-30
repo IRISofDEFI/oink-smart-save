@@ -18,19 +18,21 @@ type FadeUpProps = HTMLMotionProps<"div"> & {
   delay?: number;
   /** Starting offset in px. Revio uses 20 for text, 40 for cards. */
   y?: number;
+  /** Starting horizontal offset in px (positive = from the right). */
+  x?: number;
   /** Also scale from 0.96. */
   scale?: boolean;
 };
 
 /** Fades and rises into place once, when scrolled into view. */
-export function FadeUp({ delay = 0, y = 20, scale = false, children, ...props }: FadeUpProps) {
+export function FadeUp({ delay = 0, y = 20, x = 0, scale = false, children, ...props }: FadeUpProps) {
   const reduce = useReducedMotion();
-  const initial = reduce ? { opacity: 0 } : { opacity: 0, y, scale: scale ? 0.96 : 1 };
+  const initial = reduce ? { opacity: 0 } : { opacity: 0, x, y, scale: scale ? 0.96 : 1 };
 
   return (
     <motion.div
       initial={initial}
-      whileInView={{ opacity: 1, y: 0, scale: 1 }}
+      whileInView={{ opacity: 1, x: 0, y: 0, scale: 1 }}
       viewport={VIEWPORT}
       transition={{ duration: DURATION, delay, ease: EASE }}
       {...props}
@@ -85,34 +87,46 @@ export function StaggerItem({
 /**
  * Heading that reveals line by line: each line slides up from behind a mask.
  * Pass one string per line; the element stays a single heading for screen
- * readers.
+ * readers. The heading (not each masked line) is what's watched for
+ * visibility, since a masked line sits outside its own clip box.
  */
+const revealTags = { h1: motion.h1, h2: motion.h2, h3: motion.h3 };
+
 export function Reveal({
   lines,
-  as: Tag = "h2",
+  as = "h2",
   className,
   delay = 0,
 }: {
   lines: string[];
-  as?: "h1" | "h2" | "h3";
+  as?: keyof typeof revealTags;
   className?: string;
   delay?: number;
 }) {
   const reduce = useReducedMotion();
+  const Tag = revealTags[as];
+  const line: Variants = {
+    hidden: reduce ? { opacity: 0 } : { y: "110%" },
+    show: (i: number) => ({
+      opacity: 1,
+      y: 0,
+      transition: { duration: DURATION, delay: delay + i * 0.12, ease: EASE },
+    }),
+  };
 
   return (
-    <Tag className={className} aria-label={lines.join(" ")}>
-      {lines.map((line, i) => (
+    <Tag
+      className={className}
+      aria-label={lines.join(" ")}
+      initial="hidden"
+      whileInView="show"
+      viewport={VIEWPORT}
+    >
+      {lines.map((text, i) => (
         // Padding + negative margin keeps descenders from being clipped by the mask.
         <span key={i} aria-hidden="true" className="block overflow-hidden pb-[0.12em] -mb-[0.12em]">
-          <motion.span
-            className="block"
-            initial={reduce ? { opacity: 0 } : { y: "110%" }}
-            whileInView={reduce ? { opacity: 1 } : { y: 0 }}
-            viewport={VIEWPORT}
-            transition={{ duration: DURATION, delay: delay + i * 0.12, ease: EASE }}
-          >
-            {line}
+          <motion.span className="block" custom={i} variants={line}>
+            {text}
           </motion.span>
         </span>
       ))}
