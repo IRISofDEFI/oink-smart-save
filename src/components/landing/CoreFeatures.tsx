@@ -94,18 +94,27 @@ function Spotlight() {
       y={40}
       scale
       delay={0.2}
-      className="relative overflow-hidden rounded-[28px] bg-ink p-6 md:p-12 lg:min-h-[597px] lg:p-16"
+      className="relative overflow-hidden rounded-[28px] bg-ink p-6 pt-[260px] md:p-12 md:pt-[340px] lg:min-h-[597px] lg:p-16"
     >
-      {/* TODO: ASSET — replace this gradient placeholder with a photo
-          (e.g. <img className="absolute inset-0 h-full w-full object-cover" />). */}
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 bg-charcoal bg-[radial-gradient(ellipse_at_75%_30%,color-mix(in_oklab,var(--brand-green)_45%,transparent),transparent_55%),radial-gradient(ellipse_at_90%_90%,color-mix(in_oklab,var(--brand-green-deep)_70%,transparent),transparent_60%)]"
+      {/* Below lg the photo is a band across the top of the card (content
+          starts beneath it) so her face isn't covered by the copy; from lg it
+          fills the card behind everything, as in the Revio reference. There it
+          is slightly enlarged and anchored bottom-right so her face sits above
+          the schedule widget instead of behind it. */}
+      <img
+        src="/spotlight-trader.webp"
+        alt="A woman smiling at her phone while relaxing at home in the evening"
+        width={2076}
+        height={1161}
+        loading="lazy"
+        decoding="async"
+        className="absolute inset-x-0 top-0 h-[300px] w-full object-cover object-[85%_30%] md:h-[380px] md:object-[80%_30%] lg:inset-auto lg:bottom-0 lg:right-0 lg:h-full lg:w-[max(112%,1345px)] lg:max-w-none lg:object-[77%_100%]"
       />
-      {/* Left-side darkening so white text stays readable over the photo. */}
+      {/* Readability: fades the photo band into the card below lg; darkens the
+          left side (behind the copy) from lg. */}
       <div
         aria-hidden="true"
-        className="absolute inset-0 bg-gradient-to-b from-ink via-ink/85 to-ink/40 lg:bg-gradient-to-r lg:from-ink lg:via-ink/75 lg:to-transparent"
+        className="absolute inset-x-0 top-0 h-[300px] bg-gradient-to-b from-transparent via-ink/30 to-ink md:h-[380px] lg:inset-0 lg:h-full lg:bg-gradient-to-r lg:from-ink lg:via-ink/70 lg:to-transparent"
       />
 
       <div className="relative z-10 flex h-full max-w-[427px] flex-col items-start justify-between gap-8 lg:min-h-[469px]">
