@@ -14,6 +14,7 @@ import appCss from "../styles.css?url";
 import { reportError } from "../lib/error-reporting";
 import { OinkProvider } from "../lib/oink-store";
 import { Web3Provider } from "../providers/Web3Provider";
+import { EmailSessionKeeper } from "../components/EmailSessionKeeper";
 
 function NotFoundComponent() {
   return (
@@ -132,6 +133,8 @@ function RootComponent() {
     <Web3Provider>
       <QueryClientProvider client={queryClient}>
         <OinkProvider>
+          {/* Keeps the persisted Circle email session's token fresh on every page. */}
+          <EmailSessionKeeper />
           {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
           <Outlet />
         </OinkProvider>

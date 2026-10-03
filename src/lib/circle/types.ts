@@ -8,6 +8,14 @@ export interface CircleUserToken {
   encryptionKey: string;
 }
 
+// Response from POST /users/token/refresh.
+export interface CircleRefreshedUserToken {
+  userToken: string;
+  encryptionKey: string;
+  refreshToken: string;
+  userId?: string;
+}
+
 export interface CircleWalletChallenge {
   challengeId: string;
 }

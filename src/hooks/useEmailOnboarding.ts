@@ -13,6 +13,7 @@ import {
   initializeCircleUserWallet,
   listCircleUserWallets,
   getCircleWalletBalance,
+  saveEmailSession,
   type CircleWallet,
   type CircleTokenBalance,
 } from "@/lib/circle";
@@ -28,6 +29,7 @@ export type OnboardingStage = "email" | "otp" | "wallet" | "success";
 interface AuthTokens {
   userToken: string;
   encryptionKey: string;
+  refreshToken: string;
 }
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -86,8 +88,11 @@ export function useEmailOnboarding(): UseEmailOnboardingResult {
   const sdkInstanceIdRef = useRef<string | null>(null);
   const appIdRef = useRef<string | null>(null);
   const deviceIdRef = useRef<string | null>(null);
-  // In-memory only — never persisted to localStorage.
+  // Login tokens for this sign-up. Persisted (via saveEmailSession) only once
+  // the wallet is known, so a half-finished sign-up never leaves a session.
   const authRef = useRef<AuthTokens | null>(null);
+  // Mirrors `email` state for use inside callbacks created before it's set.
+  const emailRef = useRef("");
   // React 19 strict-mode dev can invoke sdk.execute()'s callback twice for a
   // single call; this guards against double-handling (double listWallets
   // call, double stage advance).
@@ -97,6 +102,28 @@ export function useEmailOnboarding(): UseEmailOnboardingResult {
     const { wallets } = await listCircleUserWallets({ data: { userToken } });
     const primary = wallets[0] ?? null;
     setWallet(primary);
+
+    // Persist the email session so it survives navigation and reload. Only
+    // tokens and wallet identity are stored — never the PIN or security answers.
+    const auth = authRef.current;
+    const deviceId = deviceIdRef.current;
+    if (primary && auth && deviceId) {
+      saveEmailSession({
+        userToken: auth.userToken,
+        encryptionKey: auth.encryptionKey,
+        refreshToken: auth.refreshToken,
+        deviceId,
+        walletId: primary.id,
+        address: primary.address,
+        email: emailRef.current || undefined,
+      });
+      log("email session saved", { walletId: primary.id, address: primary.address });
+    } else if (primary) {
+      logError("wallet found but session incomplete — not persisted", {
+        hasAuth: !!auth,
+        hasDeviceId: !!deviceId,
+      });
+    }
 
     if (primary) {
       const { tokenBalances } = await getCircleWalletBalance({
@@ -180,7 +207,11 @@ export function useEmailOnboarding(): UseEmailOnboardingResult {
           setError(loginError?.message ?? "Verification failed. Please try again.");
           return;
         }
-        authRef.current = { userToken: result.userToken, encryptionKey: result.encryptionKey };
+        authRef.current = {
+          userToken: result.userToken,
+          encryptionKey: result.encryptionKey,
+          refreshToken: result.refreshToken,
+        };
         setError(null);
         setPending(false);
         setStage("wallet");
@@ -268,6 +299,7 @@ export function useEmailOnboarding(): UseEmailOnboardingResult {
       log("sdk.updateConfigs() call completed");
 
       setEmail(trimmed);
+      emailRef.current = trimmed;
       setStage("otp");
     } catch (err) {
       logError("requestCircleEmailOtp failed:", err);

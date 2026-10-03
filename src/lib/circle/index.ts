@@ -1,5 +1,6 @@
 export { createCircleUser } from "./users";
-export { getCircleUserToken } from "./tokens";
+export { getCircleUserToken, refreshCircleUserToken } from "./tokens";
+export type { RefreshCircleUserTokenResult } from "./tokens";
 export {
   createCircleWallet,
   initializeCircleUserWallet,
@@ -16,4 +17,7 @@ export { requestCircleEmailOtp } from "./emailOtp";
 // currently unused; import it directly (never through this barrel) if it's
 // wired up in the future, and keep that import dynamic/client-only.
 export * from "./storage";
+// Safe to re-export: session.ts uses only storage + server functions, never
+// the browser SDK, so it doesn't drag Node-builtin shims into the SSR graph.
+export * from "./session";
 export * from "./types";
