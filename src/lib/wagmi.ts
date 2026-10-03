@@ -11,7 +11,10 @@ const RPC_URL =
 export const arcTestnet = defineChain({
   id: 5042002,
   name: 'Arc Testnet',
-  nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 6 },
+  // Arc's native gas token is USDC with 18 decimals (eth_getBalance returns
+  // 18-decimal units). The ERC-20 interface at USDC_ADDRESS uses 6 decimals;
+  // app balances/amounts go through that contract and format with 6 explicitly.
+  nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 18 },
   rpcUrls: {
     default: { http: [RPC_URL] },
     public: { http: [RPC_URL] },
