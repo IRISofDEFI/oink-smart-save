@@ -15,6 +15,7 @@ import { reportError } from "../lib/error-reporting";
 import { OinkProvider } from "../lib/oink-store";
 import { Web3Provider } from "../providers/Web3Provider";
 import { EmailSessionKeeper } from "../components/EmailSessionKeeper";
+import { EmailWalletBridge } from "../components/EmailWalletBridge";
 
 function NotFoundComponent() {
   return (
@@ -135,6 +136,8 @@ function RootComponent() {
         <OinkProvider>
           {/* Keeps the persisted Circle email session's token fresh on every page. */}
           <EmailSessionKeeper />
+          {/* Connects the read-only Circle email connector when an email session exists. */}
+          <EmailWalletBridge />
           {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
           <Outlet />
         </OinkProvider>

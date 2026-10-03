@@ -1,5 +1,7 @@
 import { defineChain } from 'viem';
-import { getDefaultConfig } from '@rainbow-me/rainbowkit';
+import { createConfig, http } from 'wagmi';
+import { getDefaultWallets } from '@rainbow-me/rainbowkit';
+import { circleEmail } from './circle/emailConnector';
 
 // Prefer a dedicated RPC endpoint (VITE_ARC_RPC_URL) when one is configured —
 // the public Arc testnet RPC is shared and rate-limits heavy callers like the
@@ -25,10 +27,24 @@ export const arcTestnet = defineChain({
   testnet: true,
 });
 
-export const config = getDefaultConfig({
+// Same wallets RainbowKit's getDefaultConfig() would set up (Safe, Rainbow,
+// Base, MetaMask, WalletConnect), built explicitly so the Circle email
+// connector can be added alongside them. Passing `connectors` to
+// getDefaultConfig() would REPLACE this list instead (its options are spread
+// last), dropping MetaMask.
+const { connectors: rainbowKitConnectors } = getDefaultWallets({
   appName: 'OinkAI',
   projectId: 'OINKAI_LOCAL_DEV',
+});
+
+export const config = createConfig({
+  // circleEmail: read-only stage 1 — makes a persisted email session a wagmi
+  // account. Not shown in RainbowKit's wallet list; it's connected
+  // automatically by EmailWalletBridge when an email session exists.
+  connectors: [...rainbowKitConnectors, circleEmail({ chain: arcTestnet })],
   chains: [arcTestnet],
+  // getDefaultConfig()'s default: one http() transport per chain (default RPC).
+  transports: { [arcTestnet.id]: http() },
   ssr: false,
 });
 
