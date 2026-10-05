@@ -62,8 +62,8 @@ function SignupPage() {
         <WalletCreationStage
           pending={onboarding.pending}
           error={onboarding.error}
-          awaitingPinSetup={onboarding.awaitingPinSetup}
-          onConfirmPinSetup={onboarding.confirmPinSetup}
+          awaitingWalletSetup={onboarding.awaitingWalletSetup}
+          onConfirmWalletSetup={onboarding.confirmWalletSetup}
           onRetryInitialize={onboarding.retryInitialize}
         />
       )}

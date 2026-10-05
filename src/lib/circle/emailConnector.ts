@@ -1,27 +1,29 @@
-// "Circle Email" wagmi connector — STAGE 1 (read-only).
+// "Circle Email" wagmi connector.
 //
 // Makes a persisted Circle email session (see storage.ts / session.ts) look
-// like a connected wallet to wagmi, so useAccount() and every read hook work
-// for email users exactly as for MetaMask users.
+// like a connected wallet to wagmi, so useAccount(), the read hooks and the
+// contract-write hooks work for email users exactly as for MetaMask users.
 //
-// Stage 1 scope:
 //   - accounts / chain come from the email session; Arc Testnet only
 //   - read RPC methods are forwarded to the Arc RPC
-//   - signing / sending throws EmailSigningNotImplementedError (stage 2 will
-//     route these through Circle challenges + the PIN screen)
+//   - eth_sendTransaction (stage 2) -> emailSigner.ts: Circle challenge, the
+//     user's approval on Circle's secure screen, then the on-chain hash
+//   - message / typed-data signing isn't supported for email wallets yet and
+//     throws EmailWalletUnsupportedMethodError
 //
 // Not exported from the ./index barrel on purpose: that barrel is reachable
 // from server code, and nothing server-side needs wagmi connectors.
 import { createConnector } from "wagmi";
 import { getAddress, numberToHex, type Address, type Chain } from "viem";
+import { sendEmailTransaction, type EmailTxRequest } from "./emailSigner";
 import { clearEmailSession } from "./session";
 import { readEmailSession, subscribeEmailSession } from "./storage";
 
 export const CIRCLE_EMAIL_CONNECTOR_ID = "circleEmail";
 
-// Methods that need the user's key. Everything else is a read and is forwarded.
-const SIGNING_METHODS = new Set([
-  "eth_sendTransaction",
+// Signing methods email wallets don't support (eth_sendTransaction is handled
+// separately). Everything not listed is a read and is forwarded to the RPC.
+const UNSUPPORTED_SIGNING_METHODS = new Set([
   "eth_signTransaction",
   "eth_sign",
   "personal_sign",
@@ -33,13 +35,11 @@ const SIGNING_METHODS = new Set([
 ]);
 
 /** EIP-1193 "unsupported method" (4200). */
-export class EmailSigningNotImplementedError extends Error {
+export class EmailWalletUnsupportedMethodError extends Error {
   code = 4200;
   constructor(method: string) {
-    super(
-      `Email wallet signing isn't implemented yet (stage 2) — "${method}" is not available for Circle email wallets.`,
-    );
-    this.name = "EmailSigningNotImplementedError";
+    super(`"${method}" isn't supported for Circle email wallets.`);
+    this.name = "EmailWalletUnsupportedMethodError";
   }
 }
 
@@ -94,7 +94,14 @@ export function createEmailProvider(chain: Chain) {
           throw new ProviderRpcError(4902, `Circle email wallets only support ${chain.name}.`);
         }
       }
-      if (SIGNING_METHODS.has(method)) throw new EmailSigningNotImplementedError(method);
+      // viem retries a failed eth_sendTransaction as wallet_sendTransaction for
+      // some error types; treat both the same so it never reaches the RPC.
+      if (method === "eth_sendTransaction" || method === "wallet_sendTransaction") {
+        const tx = (params as EmailTxRequest[] | undefined)?.[0];
+        if (!tx) throw new ProviderRpcError(-32602, "eth_sendTransaction needs a transaction object.");
+        return sendEmailTransaction(tx);
+      }
+      if (UNSUPPORTED_SIGNING_METHODS.has(method)) throw new EmailWalletUnsupportedMethodError(method);
       return forward(method, params);
     },
     on(event: string, fn: Listener) {

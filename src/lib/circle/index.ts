@@ -8,6 +8,12 @@ export {
   getCircleWalletBalance,
 } from "./wallets";
 export { getCircleDeviceToken } from "./device";
+export {
+  createCircleContractExecution,
+  getCircleChallenge,
+  getCircleTransaction,
+} from "./transactions";
+export type { CircleCallFailure, CircleChallengeStatus, CircleTransactionStatus } from "./transactions";
 export { requestCircleEmailOtp } from "./emailOtp";
 // NOT re-exported here: ./sdk.ts statically imports the browser
 // @circle-fin/w3s-pw-web-sdk package. This barrel is imported from

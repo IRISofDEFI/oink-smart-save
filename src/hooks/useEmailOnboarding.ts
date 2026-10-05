@@ -14,9 +14,11 @@ import {
   listCircleUserWallets,
   getCircleWalletBalance,
   saveEmailSession,
+  getCircleChallenge,
   type CircleWallet,
   type CircleTokenBalance,
 } from "@/lib/circle";
+import { watchHostedScreen } from "@/lib/circle/hostedScreen";
 
 // The SDK's package root only exports the W3SSdk class, not its Configs/
 // callback types (see src/lib/circle/sdk.ts for the same note) — derive them
@@ -33,6 +35,11 @@ interface AuthTokens {
 }
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/** Upper bound on the whole wallet-setup step once Circle's screen is open. */
+const WALLET_SETUP_TIMEOUT_MS = 10 * 60 * 1000;
+/** Circle Web SDK error code for "user closed the screen". */
+const SDK_USER_CANCELED = 155701;
 
 function describeError(err: unknown): string {
   if (err instanceof Error) return err.message;
@@ -58,16 +65,16 @@ export interface UseEmailOnboardingResult {
   error: string | null;
   email: string;
   // True once initializeCircleUserWallet() returned a challengeId — the UI
-  // should show the PIN/security-question warning and wait for
-  // confirmPinSetup() before opening Circle's hosted PIN-setup iframe.
-  awaitingPinSetup: boolean;
+  // explains what happens next and waits for confirmWalletSetup() before
+  // opening Circle's secure screen.
+  awaitingWalletSetup: boolean;
   walletAlreadyExisted: boolean;
   wallet: CircleWallet | null;
   balance: CircleTokenBalance | null;
   submitEmail: (email: string) => Promise<void>;
   resendOtp: () => Promise<void>;
   openVerify: () => void;
-  confirmPinSetup: () => void;
+  confirmWalletSetup: () => void;
   retryInitialize: () => void;
 }
 
@@ -93,10 +100,9 @@ export function useEmailOnboarding(): UseEmailOnboardingResult {
   const authRef = useRef<AuthTokens | null>(null);
   // Mirrors `email` state for use inside callbacks created before it's set.
   const emailRef = useRef("");
-  // React 19 strict-mode dev can invoke sdk.execute()'s callback twice for a
-  // single call; this guards against double-handling (double listWallets
-  // call, double stage advance).
-  const challengeHandledRef = useRef(false);
+  // Identifies the latest wallet-setup attempt, so a superseded attempt
+  // (e.g. the user pressed "Try again") can't update state after it ends.
+  const setupRunRef = useRef(0);
 
   const refreshWalletAndBalance = useCallback(async (userToken: string) => {
     const { wallets } = await listCircleUserWallets({ data: { userToken } });
@@ -136,9 +142,11 @@ export function useEmailOnboarding(): UseEmailOnboardingResult {
     }
   }, []);
 
-  // Stage 3 entry point: called automatically once login completes. Not
-  // user-triggered, so the PIN warning only shows up for genuinely new users
-  // (existing users skip straight past it — see the alreadyExists branch).
+  // Stage 3 entry point: called automatically once login completes. Only
+  // users Circle hasn't initialized yet get a setup challenge (and the setup
+  // screen); initialized users skip straight past it — see alreadyExists.
+  // In Circle's confirm-only mode, email login usually initializes the user
+  // already, so most new users take the alreadyExists path too.
   const beginWalletInitialize = useCallback(
     async (userToken: string) => {
       setPending(true);
@@ -357,46 +365,97 @@ export function useEmailOnboarding(): UseEmailOnboardingResult {
     log("sdk.verifyOtp() call returned (result arrives async via onLoginComplete)");
   }, []);
 
-  const confirmPinSetup = useCallback(() => {
+  // Wallet setup for a user Circle hasn't initialized yet: opens Circle's
+  // secure screen for the initialize challenge. What that screen asks for is
+  // Circle's choice (in confirm-only mode it's just a confirmation; older
+  // configurations may ask for a PIN + security questions) — we never see it.
+  //
+  // Completion comes from polling the SERVER for the challenge status; the SDK
+  // callback is only a hint (it's unreliable). And because the SDK's own
+  // "no response" timeout can be disabled on this instance (see
+  // lib/circle/hostedScreen.ts), we watch for Circle's screen ourselves, so a
+  // screen that never appears becomes a visible error instead of a hang.
+  const confirmWalletSetup = useCallback(() => {
     const sdk = sdkRef.current;
     const auth = authRef.current;
     const challengeId = pendingChallengeId;
-    if (!sdk || !auth || !challengeId) return;
+    if (!sdk || !auth || !challengeId) {
+      logError("confirmWalletSetup: missing prerequisite — not opening Circle's screen", {
+        hasSdk: !!sdk,
+        hasAuth: !!auth,
+        hasChallenge: !!challengeId,
+      });
+      setError(
+        !sdk
+          ? "Circle's secure screen isn't ready yet. Refresh the page and try again."
+          : "Your sign-up session was lost. Please start again with your email.",
+      );
+      return;
+    }
 
+    const runId = ++setupRunRef.current;
+    const stillCurrent = () => setupRunRef.current === runId;
     setPending(true);
     setError(null);
-    challengeHandledRef.current = false;
 
     sdk.setAuthentication({ userToken: auth.userToken, encryptionKey: auth.encryptionKey });
 
+    let callbackError: { code?: number; message?: string } | null = null;
     const onCompleted: ChallengeCompleteCallback = (challengeError) => {
-      log("sdk.execute() challenge callback fired", { error: challengeError });
-      if (challengeHandledRef.current) return;
-      challengeHandledRef.current = true;
-
-      if (challengeError) {
-        logError("PIN-setup challenge failed:", challengeError);
-        setPending(false);
-        setError(challengeError.message ?? "Wallet setup failed. Please try again.");
-        return;
-      }
-
-      void (async () => {
-        // Give Circle's indexer a moment before the wallet shows up in listWallets.
-        await sleep(1500);
-        try {
-          await refreshWalletAndBalance(auth.userToken);
-          setPendingChallengeId(null);
-          setStage("success");
-        } catch (err) {
-          setError(describeError(err));
-        } finally {
-          setPending(false);
-        }
-      })();
+      log("sdk.execute() callback fired", { error: challengeError ?? null });
+      if (challengeError) callbackError = challengeError as { code?: number; message?: string };
     };
 
+    const watch = watchHostedScreen();
+    log("opening Circle's secure screen for wallet setup", { challengeId });
     sdk.execute(challengeId, onCompleted);
+
+    void (async () => {
+      try {
+        await watch.opened; // rejects if Circle never shows its screen
+        log("Circle's secure screen is open — waiting for the user to finish");
+
+        const deadline = Date.now() + WALLET_SETUP_TIMEOUT_MS;
+        let endSignalSeen = false;
+        for (;;) {
+          const res = await getCircleChallenge({ data: { userToken: auth.userToken, challengeId } });
+          if (res.ok && res.status === "COMPLETE") break;
+          if (res.ok && res.status === "EXPIRED") throw new Error("The setup request expired. Please try again.");
+          if (res.ok && res.status === "FAILED") {
+            throw new Error(`Circle couldn't finish setting up your wallet${res.errorMessage ? `: ${res.errorMessage}` : "."}`);
+          }
+          // The user closed Circle's screen, or the SDK reported an error, and
+          // the server still isn't COMPLETE after one more check: stop waiting.
+          if (watch.closed() || callbackError) {
+            if (endSignalSeen) {
+              const cbErr = callbackError as { code?: number; message?: string } | null;
+              if (!cbErr || cbErr.code === SDK_USER_CANCELED) {
+                throw new Error("Wallet setup was cancelled — Circle's screen was closed before finishing.");
+              }
+              throw new Error(cbErr.message || "Wallet setup failed on Circle's screen.");
+            }
+            endSignalSeen = true;
+          }
+          if (Date.now() > deadline) throw new Error("Wallet setup timed out. Please try again.");
+          await sleep(2000);
+        }
+
+        log("wallet setup challenge complete");
+        // Give Circle's indexer a moment before the wallet shows up in listWallets.
+        await sleep(1500);
+        await refreshWalletAndBalance(auth.userToken);
+        if (stillCurrent()) {
+          setPendingChallengeId(null);
+          setStage("success");
+        }
+      } catch (err) {
+        logError("wallet setup failed:", err);
+        if (stillCurrent()) setError(describeError(err));
+      } finally {
+        watch.stop();
+        if (stillCurrent()) setPending(false);
+      }
+    })();
   }, [pendingChallengeId, refreshWalletAndBalance]);
 
   const retryInitialize = useCallback(() => {
@@ -411,14 +470,14 @@ export function useEmailOnboarding(): UseEmailOnboardingResult {
     pending,
     error,
     email,
-    awaitingPinSetup: pendingChallengeId !== null,
+    awaitingWalletSetup: pendingChallengeId !== null,
     walletAlreadyExisted,
     wallet,
     balance,
     submitEmail,
     resendOtp,
     openVerify,
-    confirmPinSetup,
+    confirmWalletSetup,
     retryInitialize,
   };
 }
