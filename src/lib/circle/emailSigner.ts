@@ -20,8 +20,10 @@
 // Browser-only at call time. The SDK is loaded lazily with a dynamic import
 // (exactly like /signup) so it never enters the SSR bundle.
 import type { W3SSdk } from "@circle-fin/w3s-pw-web-sdk";
+import { formatUnits } from "viem";
+import { arcTestnet, USDC_ADDRESS } from "@/lib/wagmi";
 import { HostedScreenTimeoutError, watchHostedScreen } from "./hostedScreen";
-import { getValidUserToken } from "./session";
+import { getValidUserToken, refreshEmailSession } from "./session";
 import { readEmailSession } from "./storage";
 import { createCircleContractExecution, getCircleChallenge, getCircleTransaction } from "./transactions";
 
@@ -40,6 +42,9 @@ const MAX_POLL_ERRORS = 5;
 // The PIN messages only apply to accounts Circle configured with a PIN; for
 // confirm-only accounts Circle never returns them.
 const SDK_USER_CANCELED = 155701;
+// Circle's screen couldn't decrypt the challenge with the encryptionKey we
+// passed: the key is empty or isn't the one Circle holds for this userToken.
+const SDK_INVALID_ENCRYPTION_KEY = 155118;
 const SDK_PIN_ERRORS: Record<number, string> = {
   155112: "Incorrect PIN.",
   155119: "Your PIN is locked after too many attempts. Reset it with your security questions, then try again.",
@@ -57,6 +62,14 @@ export class EmailTransactionError extends Error {
     super(message);
     this.name = "EmailTransactionError";
     this.code = code;
+  }
+}
+
+/** Circle's screen rejected our encryptionKey (155118) before the user could approve. */
+class EncryptionKeyRejectedError extends EmailTransactionError {
+  constructor() {
+    super(-32603, "Invalid encryption key");
+    this.name = "EncryptionKeyRejectedError";
   }
 }
 
@@ -125,16 +138,71 @@ async function runEmailTransaction(tx: EmailTxRequest): Promise<`0x${string}`> {
     throw new EmailTransactionError(-32603, "Sending native USDC value isn't supported for email wallets.");
   }
 
-  const userToken = await getValidUserToken();
-  if (!userToken) throw new EmailTransactionError(4100, "Your email session expired — log in with email again.");
+  void logWalletFunds(session.address);
+
+  try {
+    return await attemptEmailTransaction(tx, await getSigningAuth());
+  } catch (err) {
+    if (!(err instanceof EncryptionKeyRejectedError)) throw err;
+    // The stored encryptionKey no longer matches what Circle holds for this
+    // session. Get a new userToken + encryptionKey pair from Circle and try
+    // once more with a new challenge (nothing was signed: the screen failed
+    // before the user could approve).
+    log("Circle rejected the stored encryptionKey (155118) — refreshing the session and retrying once");
+    const outcome = await refreshEmailSession();
+    log("session refresh:", outcome);
+    if (outcome !== "refreshed") {
+      throw new EmailTransactionError(4100, "Your email session is out of date — log in with email again.");
+    }
+    try {
+      return await attemptEmailTransaction(tx, await getSigningAuth());
+    } catch (retryErr) {
+      if (retryErr instanceof EncryptionKeyRejectedError) {
+        throw new EmailTransactionError(
+          4100,
+          "Circle rejected this session's encryption key — log out and log in with email again.",
+        );
+      }
+      throw retryErr;
+    }
+  }
+}
+
+interface SigningAuth {
+  userToken: string;
+  encryptionKey: string;
+  walletId: string;
+}
+
+/**
+ * userToken + encryptionKey for one transaction, taken from ONE session
+ * snapshot so they're always the pair Circle issued together (login or the
+ * same refresh). Refreshes first if the token is near expiry.
+ */
+async function getSigningAuth(): Promise<SigningAuth> {
+  const token = await getValidUserToken();
+  const s = readEmailSession();
+  if (!token || !s) throw new EmailTransactionError(4100, "Your email session expired — log in with email again.");
+  if (!s.encryptionKey) throw new EmailTransactionError(4100, "Your email session is incomplete — log in with email again.");
+  // Diagnostics without secrets: whether the token we were handed is the
+  // stored one, and how old that pair is.
+  log("signing with stored session pair", {
+    tokenMatchesStored: token === s.userToken,
+    pairAgeMinutes: Math.round((Date.now() - s.issuedAt) / 60000),
+  });
+  return { userToken: s.userToken, encryptionKey: s.encryptionKey, walletId: s.walletId };
+}
+
+async function attemptEmailTransaction(tx: EmailTxRequest, auth: SigningAuth): Promise<`0x${string}`> {
+  const { userToken } = auth;
 
   // 1. challenge
   log("eth_sendTransaction -> creating Circle challenge", { to: tx.to, selector: tx.data?.slice(0, 10) });
   const created = await createCircleContractExecution({
     data: {
       userToken,
-      walletId: session.walletId,
-      contractAddress: tx.to,
+      walletId: auth.walletId,
+      contractAddress: tx.to!,
       callData: tx.data ?? "0x",
       refId: `oinkai-${Date.now()}`,
     },
@@ -145,14 +213,21 @@ async function runEmailTransaction(tx: EmailTxRequest): Promise<`0x${string}`> {
   const { challengeId } = created;
   log("challenge created", challengeId);
 
-  // 2. Circle's secure screen (approve / confirm)
+  // 2. Circle's secure screen (approve / confirm), authenticated with the
+  // same userToken + encryptionKey pair that created the challenge.
   const sdk = await getCircleSigningSdk();
-  const latest = readEmailSession(); // pick up an encryptionKey rotated by a refresh
-  if (!latest) throw new EmailTransactionError(4100, "Your email session ended — log in with email again.");
-  sdk.setAuthentication({ userToken, encryptionKey: latest.encryptionKey });
+  sdk.setAuthentication({ userToken, encryptionKey: auth.encryptionKey });
   let sdkError: { code?: number; message: string } | null = null;
-  const watch = watchHostedScreen();
-  sdk.execute(challengeId, (err) => {
+  // Diagnostics: which keys Circle's iframe posts (e.g. whether clicking
+  // Confirm sends anything back at all). Key names only, never values.
+  const watch = watchHostedScreen(undefined, (keys) => log("Circle screen message:", keys.join(",")));
+  sdk.execute(challengeId, (err, result) => {
+    log("sdk.execute callback", {
+      errorCode: (err as { code?: number } | undefined)?.code ?? null,
+      errorMessage: err?.message ?? null,
+      resultType: (result as { type?: string } | undefined)?.type ?? null,
+      resultStatus: (result as { status?: string } | undefined)?.status ?? null,
+    });
     if (err) sdkError = { code: (err as { code?: number }).code, message: err.message };
   });
   log("opening Circle's secure screen (sdk.execute)");
@@ -188,16 +263,29 @@ async function waitForChallenge(
   sdkError: () => { code?: number; message: string } | null,
   screenClosed: () => boolean,
 ): Promise<string> {
-  const deadline = Date.now() + APPROVAL_TIMEOUT_MS;
+  const started = Date.now();
+  const deadline = started + APPROVAL_TIMEOUT_MS;
   let errors = 0;
   let sdkErrorSeen = false;
-  for (;;) {
-    const res = await getCircleChallenge({ data: { userToken, challengeId } }).catch((e: unknown) => ({
-      ok: false as const,
-      code: 0,
-      status: 0,
-      message: e instanceof Error ? e.message : String(e),
-    }));
+  for (let poll = 1; ; poll++) {
+    // Diagnostics: one line per poll, plus a warning if a status request hangs.
+    const sentAt = Date.now();
+    const slow = window.setTimeout(() => log(`challenge poll #${poll}: request still pending after 10s`), 10_000);
+    const res = await getCircleChallenge({ data: { userToken, challengeId } })
+      .catch((e: unknown) => ({
+        ok: false as const,
+        code: 0,
+        status: 0,
+        message: e instanceof Error ? e.message : String(e),
+      }))
+      .finally(() => window.clearTimeout(slow));
+    log(
+      `challenge poll #${poll} (+${Math.round((Date.now() - started) / 1000)}s, ${Date.now() - sentAt}ms):`,
+      res.ok
+        ? { status: res.status, correlationIds: res.correlationIds.length, errorCode: res.errorCode ?? null, errorMessage: res.errorMessage ?? null }
+        : { requestFailed: res.message, code: res.code, httpStatus: res.status },
+      { screenClosed: screenClosed(), sdkError: sdkError()?.code ?? null },
+    );
     if (res.ok) {
       errors = 0;
       if (res.status === "COMPLETE" && res.correlationIds[0]) return res.correlationIds[0];
@@ -213,6 +301,7 @@ async function waitForChallenge(
     // server still isn't COMPLETE (checked once more after first noticing it):
     // the user cancelled or approval failed.
     const e = sdkError();
+    if (e?.code === SDK_INVALID_ENCRYPTION_KEY) throw new EncryptionKeyRejectedError();
     if (e || screenClosed()) {
       if (sdkErrorSeen) {
         if (!e || e.code === SDK_USER_CANCELED) throw new EmailTransactionError(4001, "User rejected the request.");
@@ -251,5 +340,33 @@ async function waitForTransaction(userToken: string, transactionId: string): Pro
       throw new EmailTransactionError(-32603, "Circle didn't finish the transaction in time. Check your history before retrying.");
     }
     await sleep(POLL_MS);
+  }
+}
+
+// Diagnostics: the wallet's native USDC (gas) and ERC-20 USDC balances, read
+// from the public Arc RPC. Public data only.
+async function logWalletFunds(address: string): Promise<void> {
+  try {
+    const rpc = arcTestnet.rpcUrls.default.http[0];
+    const call = async (method: string, params: unknown[]) => {
+      const r = await fetch(rpc, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
+      });
+      return ((await r.json()) as { result?: string }).result ?? "0x0";
+    };
+    const padded = address.toLowerCase().replace(/^0x/, "").padStart(64, "0");
+    const [native, erc20] = await Promise.all([
+      call("eth_getBalance", [address, "latest"]),
+      call("eth_call", [{ to: USDC_ADDRESS, data: `0x70a08231${padded}` }, "latest"]),
+    ]);
+    log("wallet funds", {
+      address,
+      nativeUsdc: formatUnits(BigInt(native), 18),
+      erc20Usdc: formatUnits(BigInt(erc20), 6),
+    });
+  } catch (err) {
+    log("wallet funds: couldn't read", err instanceof Error ? err.message : err);
   }
 }
